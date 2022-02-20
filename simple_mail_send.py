@@ -87,44 +87,7 @@ def send_mail(mailSMTP,mailPort,password,email_from,emails_to,subject,htmlintro,
 
 
         #Generate the Password Key based on the MachineID
-    password_key()
 
-    try:
-        with open(cfgDataFileName, 'r') as cfgDataFile:
-            cfgData_temp = json.load(cfgDataFile)
-            # If file loaded, replace default values in cfgData with values from file
-            for key in cfgData:   
-                if key in cfgData_temp:
-                   cfgData[key] = cfgData_temp[key]
-
-    # If file does not exist, it will be created using defaults.
-    except IOError:  
-        
-        print("Enter sender's device email userid (sending_userid@gmail.com):")    # Sender's email userid
-        cfgData['email_from'] = input()
-
-        print("Enter email send password: ")
-        cfgData['token'] = password_encrypt(input())
-
-        print("Enter first recipient's email userid (recipient_userid@something.com) for alerts:")  # Recepient's email userid
-        cfgData[emails_to1] = input()
-
-        print("Enter second  recipient's email userid (recipient_userid@something.com) for status:")  # Recepient's email userid
-        print("Or press enter if None")
-        cfgData[emails_to2] = input()
-        
-        print("Enter third  recipient's email userid (recipient_userid@something.com) for status:")  # Recepient's email userid
-        print("Or press enter if None")
-        cfgData[emails_to3] = input()
-
-        with open(cfgDataFileName, 'w') as cfgDataFile:
-            json.dump(cfgData, cfgDataFile)
-
-        emailto = cfgData[emails_to1]
-        if cfgData[emails_to2] not ""
-            emailto = append(cfgData[emails_to2])
-        if cfgData[emails_to3] not ""
-            emailto = append(cfgData[emails_to3]) 
   
       for email_to in emails_to :
 
