@@ -1,3 +1,11 @@
+#My Added Ignores
+  #json files used to hold configuration
+.json
+ #.csv files used for logging data
+.csv
+ #html files used to generate web pages
+.html
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
