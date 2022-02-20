@@ -1,10 +1,14 @@
 #My Added Ignores
+  #png image files
+*.png  
   #json files used to hold configuration
-.json
+*.json
  #.csv files used for logging data
-.csv
+*.csv
  #html files used to generate web pages
-.html
+*.html
+ #text files used for saving copies of files
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
