@@ -25,17 +25,21 @@ import cfgData
 
 def main(args):
 	# Test the cfgData module
+	existing , cfgData = get_cfgData()
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	if existing :
+		print(cfgData)
+	else:
+		print("no file present so lets make")
+		edit_cfgData(existing,cfgData)
+		existing = True
+	try:
+		while(True):
+			# Repeatedly test editing cfgData,  Press Ctrl C to exit
+			print("Repeatedly test editing cfgData,  Press Ctrl C to exit")
+			edit_cfgData(existing,cfgData)
+    except KeyboardInterrupt
+		print("Exiting...")
     return 0
 
 if __name__ == '__main__':

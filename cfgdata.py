@@ -86,7 +86,7 @@ def get_cfgData()
 	except IOError:  
 		return  false,None
 
-def main(args):	
+def edit_cfgData(existing,cfgData):	
 	while True:
 		if existing:
 			print("Existing Value for Senders Email :",cfgData['email_from'])
@@ -119,12 +119,8 @@ def main(args):
 	
 	print("Password now :  ",password_decrypt(cfgData['token']))
 
-
-
-	
 	print(cfgData)
-	
-	
+
 	if existing:
 		emailto = cfgData["emails_to"]
 	else:
@@ -172,7 +168,7 @@ def main(args):
 	with open(cfgDataFileName, 'w') as cfgDataFile:
 		json.dump(cfgData, cfgDataFile)
 
-	return 0
+	return cfgData
 
 if __name__ == '__main__':
 	import sys
