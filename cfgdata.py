@@ -53,6 +53,7 @@ def check(email):
 
 def password_encrypt(phrase):
 	#Generate the token for securely storong password from the password
+	#uses key based on machineID
 	keyGen = bytes(subprocess.getoutput('cat /etc/machine-id'),'UTF-8')
 	fernetKey = Fernet(base64.urlsafe_b64encode(keyGen))
 	token = fernetKey.encrypt(bytes(phrase,encoding))
@@ -60,6 +61,7 @@ def password_encrypt(phrase):
 
 def password_decrypt(token):
 	#generate the password from the token
+	#uses key based on machineID
 	keyGen = bytes(subprocess.getoutput('cat /etc/machine-id'),'UTF-8')
 	fernetKey = Fernet(base64.urlsafe_b64encode(keyGen))
 	phrase = fernetKey.decrypt(bytes(token,encoding))
@@ -76,17 +78,15 @@ def get_cfgData()
 	try:
 		with open(cfgDataFileName, 'r') as cfgDataFile:
 			cfgData_file_data = json.load(cfgDataFile)
-			# If file loaded, replace default values in cfgData with values from file
-			print("Values in Config File")
 			for key in cfgData_file_data:   
 				print( key, ": = ",cfgData_file_data[key])
 				cfgData[key] = cfgData_file_data[key]
-			return = True
+			return true, cfgData
 
 	except IOError:  
-		return  = False
+		return  false,None
 
-	
+def main(args):	
 	while True:
 		if existing:
 			print("Existing Value for Senders Email :",cfgData['email_from'])
