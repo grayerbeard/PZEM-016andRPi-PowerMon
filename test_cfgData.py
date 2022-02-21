@@ -37,9 +37,15 @@ def main(args):
 		while(True):
 			# Repeatedly test editing cfgData,  Press Ctrl C to exit
 			print("Repeatedly test editing cfgData,  Press Ctrl C to exit")
-			edit_cfgData(existing,cfgData)
+			cfgData = edit_cfgData(existing,cfgData)
     except KeyboardInterrupt
-		print("Exiting...")
+		print("Exiting, edits may not have beeen saved to file")
+		print("Buffer Contents : ",cfgData)
+		existing , cfgData = get_cfgData()
+		if existing :
+			print("cfgdata.json file contents : ",cfgData
+		else:
+			print("No json file saved")
     return 0
 
 if __name__ == '__main__':
