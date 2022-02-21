@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  cfgdata.py
+#  cfgData.py
 #  
 #  Copyright 2022  <pi@RPi4Shed>
 #  
@@ -66,6 +66,12 @@ def password_decrypt(token):
 	fernetKey = Fernet(base64.urlsafe_b64encode(keyGen))
 	phrase = fernetKey.decrypt(bytes(token,encoding))
 	return phrase.decode(encoding)
+	
+def print_cfg_data(cfgData):
+	print()
+	for key in cfgData:
+		print( key, ": = " ,cfgData[key])
+	print()
 
 def get_cfgData(cfgDataFileName):
 	cfgData = dict()
@@ -79,19 +85,19 @@ def get_cfgData(cfgDataFileName):
 		with open(cfgDataFileName, 'r') as cfgDataFile:
 			cfgData_file_data = json.load(cfgDataFile)
 			for key in cfgData_file_data:   
-				print( key, ": = ",cfgData_file_data[key])
 				cfgData[key] = cfgData_file_data[key]
-				FileRead = True
-			return FileRead, cfgData
+			print_cfg_data(cfgData)
+			File_Read = True
+			return File_Read, cfgData
 
 	except IOError:
-		FileRead = False  
-		return  FileRead,cfgData
+		File_Read = False  
+		return  File_Read,cfgData
 
-def edit_cfgData(cfgDataFileName,FileRead,cfgData):	
+def edit_cfgData(cfgDataFileName,File_Read,cfgData):	
 	try:
 		while True:
-			if FileRead:
+			if File_Read:
 				print("existing Value for Senders Email :",cfgData['email_from'])
 				print("Enter new or Press enter to leave unchanged")
 			else:
@@ -107,7 +113,7 @@ def edit_cfgData(cfgDataFileName,FileRead,cfgData):
 		print("Send Email Address set to: ",cfgData['email_from'])
 	
 		while True:
-			if FileRead:
+			if File_Read:
 				print("There is an existing email send password set")
 				print("Enter new or press enter to leave as is")
 			else:
@@ -118,67 +124,78 @@ def edit_cfgData(cfgDataFileName,FileRead,cfgData):
 			if len(cfgData['token']) > 4:
 				break
 			else:
-				print("Password required")
-		
+				print("Password required surely must be more than 4 characters")
+		print()
 		print("Password now :  ",password_decrypt(cfgData['token']))
-	
-		print(cfgData)
-	
-		if FileRead:
+
+		if File_Read:
 			emailto = cfgData["emails_to"]
+			print()
+			print("Email to send to set to: ",cfgData["emails_to"])
+			print()
 		else:
 			emailto = []
-		count = 0
+		email_to_count = 0
 		while True :
-			if count < len(emailto) and FileRead:
+			if email_to_count < len(emailto) and File_Read:
 	
-				print("Number : ",count + 1, " Email address :",emailto[count])
+				print("Number : ",email_to_count + 1, " Email address :",emailto[email_to_count])
 				print("Either enter replacement Or d to delete or enter to leave as is")
 	
-				input_value = input() or emailto[count]
+				input_value = input() or emailto[email_to_count]
 	 
 				if input_value == "d":
-					del emailto[count]
+					del emailto[email_to_count]
 					print("Deleting old value")
 				elif input_value == "f":
-					print("finished")
+					print("Finished editing Send to Emails")
 					break
 				else:
 					if check(input_value):
-						emailto[count] = input_value
-						count += 1
+						emailto[email_to_count] = input_value
+						email_to_count += 1
 					else:
+						print()
 						print("Not a valid email try again")
+						print()
 			else:	
-				print("Enter a new recipient's email for send email number: ",count +1)
+				print()
+				print("Enter a new recipient's email for send email number: ",email_to_count +1)
 				print("when filished just enter f")
 				print("Enter a new value")
 				input_value = input()
-				if input_value == "f":
-					print("finished")
+				if (input_value == "f") and email_to_count > 0:
+					print("Finished editing send emails")
 					break
+				elif input_value == "f":
+					print()
+					print("Must enter at least one send email")
+					print()
 				else:
 					if check(input_value):
 						emailto.append(input_value)
 						print("Debug print emailto : ",len(emailto), emailto)
-						count += 1
+						email_to_count += 1
 					else:
 						print("Not a valid email try again")
 		cfgData['emails_to'] = emailto
 		with open(cfgDataFileName, 'w') as cfgDataFile:
 			json.dump(cfgData, cfgDataFile)
 		keybrd_interupt = False
-		return keybrd_interupt,cfgData			
+		File_Full = True
+		return keybrd_interupt,cfgData,File_Full			
 	except KeyboardInterrupt:
 		print()
-		print("Interupt in edit_cfgData")
+		print("Interupt while in edit_cfgData")
 		print()
 		# Interupt while editing so return current data and save it to file.
 		# Flag will be used in main prog to continue
 		with open(cfgDataFileName, 'w') as cfgDataFile:
 			json.dump(cfgData, cfgDataFile)
 		keybrd_interupt = True
-		return keybrd_interupt,cfgData
+		# Signal if interupted when editing not finished
+		File_Full = File_read or (email_to_count >  0)
+		return keybrd_interupt,cfgData,File_Full
 
 if __name__ == '__main__':
 	import sys

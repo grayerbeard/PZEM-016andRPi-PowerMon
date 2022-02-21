@@ -26,15 +26,15 @@ from cfgData import edit_cfgData , get_cfgData, password_decrypt
 def main(args):
 	cfgDataFileName = "cfgData.json"
 	# Test the cfgData module
-	FileRead , cfgData = get_cfgData(cfgDataFileName)
+	File_Read , cfgData = get_cfgData(cfgDataFileName)
 	
-	if FileRead :
+	if File_Read :
 		print(cfgData)
 	else:
 		
-		print("no file present so lets make", FileRead)
-		keybrd_interupt,cfgData = edit_cfgData(cfgDataFileName,FileRead,cfgData)
-		FileRead = True
+		print("no file present so lets make", File_Read)
+		keybrd_interupt,cfgData,File_Full = edit_cfgData(cfgDataFileName,File_Read,cfgData)
+		File_Read = File_Full
 	try:
 		# This Keyboard Interupt Flag signals an interupt while editing 
 		keybrd_interupt = False
@@ -42,7 +42,7 @@ def main(args):
 			# Repeatedly test editing cfgData,  Press Ctrl C to exit
 			print()
 			print("Repeatedly testing editing cfgData,  Press Ctrl C to exit")
-			keybrd_interupt,cfgData = edit_cfgData(cfgDataFileName,FileRead,cfgData)
+			keybrd_interupt,cfgData,File_Full = edit_cfgData(cfgDataFileName,File_Read,cfgData)
 		print()
 		print("Dropped back to Main Prog due to interupt whil editing")
 		print()
@@ -50,15 +50,15 @@ def main(args):
 		print()
 		print("Interupt in main Program")
 		print()
-		FileRead , cfgData_filed = get_cfgData(cfgDataFileName)
+		File_Read , cfgData_filed = get_cfgData(cfgDataFileName)
 		if cfgData_filed != cfgData:
 			print("Edits may not have beeen saved to file")
 
 		print
 		print("Buffer Contents : ",cfgData)
 
-		if FileRead :
-			print("cfgdata.json file contents : ",cfgData)
+		if File_Read :
+			print("cfgData.json file contents : ",cfgData)
 		else:
 			print("No json file saved")
 	return 0
