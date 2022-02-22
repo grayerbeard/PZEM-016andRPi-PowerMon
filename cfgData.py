@@ -41,6 +41,15 @@ except ImportError:
 		print("Error: import json module failed")
 		sys.exit()
 
+# Format of cfgData Dictionary
+#    key        :  variable used for 
+# email_from	: a single email; address
+# token 		: the encrypted password
+# emails_to		: a list of email addresses to send emails to (can be just one)
+# mailSMTP		: the address of the server for sending email
+# mailPort		: port number for sending email e.g. 465
+# subject		: Text to put in the email subject
+
 encoding = 'utf-8'
 # Regular expression for validating email
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
@@ -84,7 +93,7 @@ def get_cfgData(cfgDataFileName):
 	try:
 		with open(cfgDataFileName, 'r') as cfgDataFile:
 			cfgData_file_data = json.load(cfgDataFile)
-			for key in cfgData_file_data:   
+			for kmailSMTPey in cfgData_file_data:   
 				cfgData[key] = cfgData_file_data[key]
 			print_cfg_data(cfgData)
 			File_Read = True
@@ -96,6 +105,7 @@ def get_cfgData(cfgDataFileName):
 
 def edit_cfgData(cfgDataFileName,File_Read,cfgData):	
 	try:
+#                            Get email_from
 		while True:
 			if File_Read:
 				print("existing Value for Senders Email :",cfgData['email_from'])
@@ -112,6 +122,7 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 			
 		print("Send Email Address set to: ",cfgData['email_from'])
 	
+#                            Get Password and encrpt token
 		while True:
 			if File_Read:
 				print("There is an existing email send password set")
@@ -128,6 +139,7 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 		print()
 		print("Password now :  ",password_decrypt(cfgData['token']))
 
+#                            Get email_to
 		if File_Read:
 			emailto = cfgData["emails_to"]
 			print()
@@ -135,10 +147,11 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 			print()
 		else:
 			emailto = []
+			# Zero count so that we start scanning through at first email
 		email_to_count = 0
 		while True :
+			#  Check if we are still editing entered emails or entering new ones
 			if email_to_count < len(emailto) and File_Read:
-	
 				print("Number : ",email_to_count + 1, " Email address :",emailto[email_to_count])
 				print("Either enter replacement Or d to delete or enter to leave as is")
 	
@@ -179,6 +192,51 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 					else:
 						print("Not a valid email try again")
 		cfgData['emails_to'] = emailto
+
+				
+#							Get mailSMTP
+
+#							Get mailPort
+		while True:
+			try:
+				if File_Read:
+					print("There is an existing port number set at :", cfgData['mailPort'])
+					print("Enter new or press enter to leave as is")
+				else:
+					print("No existing port set so enter new Port Number")
+					cfgData['mailPort'] = "0"
+				mailPort = input("Enter Port Number") or int(cfgData['mailPort'])
+				if 1 < mailPort < 9999:
+					break
+				else:
+					print("Enter correct port number between 1 and 9999")
+			except ValueError:
+					print("Enter a number")
+		print()
+		print("portSMTP port now set to ",cfgData['mailPor']))
+
+#							Get subject
+		while True:
+			try:
+				if File_Read:
+					print("There is an existing subject :", cfgData['subject'])
+					print("Enter new or press enter to leave as is")
+				else:
+					print("No subject set so entersubject")
+					cfgData['mailPort'] = "0"
+				subject = input("Enter subject") or cfgData['subject']
+				if len(Subject) > 4:
+					break
+				else:
+					print("Enter some subject text")
+			except ValueError:
+					print("Enter text")
+		print()
+		print("portSMTP port now set to ",cfgData['mailPor']))
+
+#               All done editing
+
+#               Put data into filjson file
 		with open(cfgDataFileName, 'w') as cfgDataFile:
 			json.dump(cfgData, cfgDataFile)
 		keybrd_interupt = False
