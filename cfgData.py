@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+     #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #  cfgData.py
@@ -93,9 +93,10 @@ def get_cfgData(cfgDataFileName):
 	try:
 		with open(cfgDataFileName, 'r') as cfgDataFile:
 			cfgData_file_data = json.load(cfgDataFile)
-			for kmailSMTPey in cfgData_file_data:   
+			for key in cfgData_file_data:   
 				cfgData[key] = cfgData_file_data[key]
-			print_cfg_data(cfgData)
+				# Debug
+				print(key," : ",cfgData[key])
 			File_Read = True
 			return File_Read, cfgData
 
@@ -205,15 +206,17 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 				else:
 					print("No existing port set so enter new Port Number")
 					cfgData['mailPort'] = "0"
-				mailPort = input("Enter Port Number") or int(cfgData['mailPort'])
+				mailPort = int(input("Enter Port Number")) or int(cfgData['mailPort'])
 				if 1 < mailPort < 9999:
+					cfgData['mailPort'] = str(mailPort)
 					break
 				else:
 					print("Enter correct port number between 1 and 9999")
 			except ValueError:
 					print("Enter a number")
+					print()
 		print()
-		print("portSMTP port now set to ",cfgData['mailPor']))
+		print("email send SMTP Port now set to ",cfgData['mailPort'])
 
 #							Get subject
 		while True:
@@ -232,7 +235,7 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 			except ValueError:
 					print("Enter text")
 		print()
-		print("portSMTP port now set to ",cfgData['mailPor']))
+		print("portSMTP port now set to ",cfgData['mailPor'])
 
 #               All done editing
 
