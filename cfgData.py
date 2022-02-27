@@ -41,14 +41,7 @@ except ImportError:
 		print("Error: import json module failed")
 		sys.exit()
 
-# Format of cfgData Dictionary
-#    key        :  variable used for 
-# email_from	: a single email; address
-# token 		: the encrypted password
-# emails_to		: a list of email addresses to send emails to (can be just one)
-# mailSMTP		: the address of the server for sending email
-# mailPort		: port number for sending email e.g. 465
-# subject		: Text to put in the email subject
+
 
 encoding = 'utf-8'
 # Regular expression for validating email
@@ -59,6 +52,14 @@ def check(email):
 		return True
 	else:
 		return False
+		
+def compareKeys(requiredkeys,datasetkeys):
+	if len(requiredkeys) != len(datasetkeys):
+		return False
+	for ind in range(0,len(requiredkeys)):
+		if requiredkeys[ind] != datasetkeys[ind]:
+			return False
+	return True
 
 def password_encrypt(phrase):
 	#Generate the token for securely storong password from the password
@@ -82,46 +83,62 @@ def print_cfg_data(cfgData):
 		print( key, ": = " ,cfgData[key])
 	print()
 
-def get_cfgData(cfgDataFileName):
+def get_cfgData(cfgDataFileName,cfgDataKeys,cfgDataDefaults):
 	cfgData = dict()
 	# Tries to get cfgData from file
-	# If successful returns True
+	# If fully successful returns FileReadRusult = 3
+	# If file read but keys 
 	# if not returns False (so new file needed
 	# Returns Current File Contents if file exists
 	# If no file then returns an empty cfgData variable
-
+	
 	try:
 		with open(cfgDataFileName, 'r') as cfgDataFile:
 			cfgData_file_data = json.load(cfgDataFile)
-			for key in cfgData_file_data:   
+			print()
+			print("Here is the data read from the file") 
+			for key in cfgData_file_data: 
 				cfgData[key] = cfgData_file_data[key]
 				# Debug
 				print(key," : ",cfgData[key])
-			File_Read = True
-			return File_Read, cfgData
+			print()
+			if compareKeys(cfgData.keys(),cfgDataKeys):
+				FileReadResult = 2
+				print("File read and Keys correct")
+			else:
+				print("File Read but not all items there")
+				print("Required : ",cfgDataKeys)
+				print("From File: ",cfgData.keys())
+				FileReadResult = 1
+			print("Finished getCfgData, read file")
+			print()
+			return FileReadResult, cfgData
 
 	except IOError:
-		File_Read = False  
-		return  File_Read,cfgData
+		FileReadResult = 0
+		print("No file found returned defaults")
+		print("Finished getCfgData, No File")
+		print()
+		return  FileReadResult,cfgDataDefaults
 
 def edit_cfgData(cfgDataFileName,File_Read,cfgData):	
 	try:
-#                            Get email_from
+#                            Get emailFrom
 		while True:
 			if File_Read:
-				print("existing Value for Senders Email :",cfgData['email_from'])
+				print("existing Value for Senders Email :",cfgData['emailFrom'])
 				print("Enter new or Press enter to leave unchanged")
 			else:
-				cfgData['email_from'] = ""
+				cfgData['emailFrom'] = ""
 				print("Enter email SENDER's email address")   
 	
-			cfgData['email_from'] = input() or cfgData['email_from']
-			if check(cfgData['email_from']):
+			cfgData['emailFrom'] = input() or cfgData['emailFrom']
+			if check(cfgData['emailFrom']):
 				break
 			else:
 				print("Not a valid email try again")
 			
-		print("Send Email Address set to: ",cfgData['email_from'])
+		print("Send Email Address set to: ",cfgData['emailFrom'])
 	
 #                            Get Password and encrpt token
 		while True:
@@ -142,9 +159,9 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 
 #                            Get email_to
 		if File_Read:
-			emailto = cfgData["emails_to"]
+			emailto = cfgData["emailTo"]
 			print()
-			print("Email to send to set to: ",cfgData["emails_to"])
+			print("Email to send to set to: ",cfgData["emailTo"])
 			print()
 		else:
 			emailto = []
@@ -192,7 +209,7 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 						email_to_count += 1
 					else:
 						print("Not a valid email try again")
-		cfgData['emails_to'] = emailto
+		cfgData['emailTo'] = emailto
 
 				
 #							Get mailSMTP
@@ -228,14 +245,14 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData):
 					print("No subject set so entersubject")
 					cfgData['mailPort'] = "0"
 				subject = input("Enter subject") or cfgData['subject']
-				if len(Subject) > 4:
+				if len(subject) > 4:
 					break
 				else:
 					print("Enter some subject text")
 			except ValueError:
 					print("Enter text")
 		print()
-		print("portSMTP port now set to ",cfgData['mailPor'])
+		print("Subject now set to ",cfgData['subject'])
 
 #               All done editing
 
