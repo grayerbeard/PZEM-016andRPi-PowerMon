@@ -15,7 +15,10 @@ def main(args):
 # emailTo		: a list of email addresses to send emails to (can be just one)
 
 	cfgDataFileName = "cfgData.json"
-	cfgDataKeys = ["emailFrom","token","mailSMTP","mailPort","subject","emailTo"]
+	cfgDataRequiredKeys = ["emailFrom","token","mailSMTP","mailPort","subject","emailTo"]
+	###
+	for ind in range(0,len(cfgDataRequiredKeys)):
+		print(ind, " : ",cfgDataRequiredKeys[ind])
 	#Types Are;
 	#0 email
 	#1 password
@@ -39,10 +42,10 @@ def main(args):
 	# Test the cfgData module
 	print()
 	print(" Here are the default Values")
-	for ind in range(0,len(cfgDataKeys)):
-		print(cfgDataKeys[ind]," : ",cfgDataDefaults[cfgDataKeys[ind]]," is Type: ",cfgDataType[ind])
+	for ind in range(0,len(cfgDataRequiredKeys)):
+		print(cfgDataRequiredKeys[ind]," : ",cfgDataDefaults[cfgDataRequiredKeys[ind]]," is Type: ",cfgDataType[ind])
 
-	FileReadResult , cfgData = get_cfgData(cfgDataFileName,cfgDataKeys,cfgDataDefaults)
+	FileReadResult , cfgData = get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults)
 	
 	if FileReadResult == 2 :
 		print(cfgData)

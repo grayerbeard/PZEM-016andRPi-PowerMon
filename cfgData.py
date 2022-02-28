@@ -83,7 +83,7 @@ def print_cfg_data(cfgData):
 		print( key, ": = " ,cfgData[key])
 	print()
 
-def get_cfgData(cfgDataFileName,cfgDataKeys,cfgDataDefaults):
+def get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults):
 	cfgData = dict()
 	# Tries to get cfgData from file
 	# If fully successful returns FileReadRusult = 3
@@ -102,9 +102,14 @@ def get_cfgData(cfgDataFileName,cfgDataKeys,cfgDataDefaults):
 				# Debug
 				print(key," : ",cfgData[key])
 			print()
-			if compareKeys(cfgData.keys(),cfgDataKeys):
+			#Reference for list of keys see 
+			#https://www.delftstack.com/howto/python/python-dictionary-index/
+			File_cfgDataKeys = list(cfgData.keys())
+			if compareKeys(cfgDataRequiredKeys,File_cfgDataKeys):
 				FileReadResult = 2
 				print("File read and Keys correct")
+				
+				
 			else:
 				print("File Read but not all items there")
 				print("Required : ",cfgDataKeys)
