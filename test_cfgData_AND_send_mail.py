@@ -53,15 +53,15 @@ def main(args):
 	#4 text
 	#5 list emails
 	
-	# The test types to apply when the data is read in
-	cfgDataType = [0,1,2,3,4,10]
+	# The test types to apply when the data is read i
+	cfgDataType = ["email","pwd","server","port","subj","emails"]
 	
 	# Prompts to the user when he enters values to put in the dictionary
-	cfgDataPrompt = ["Enter email addres for sending Emails",
+	cfgDataPrompt = ["Enter email address for sending Emails",
 					"Enter Password for email sending",
-					"Enter Email Send Server"
-					"Enter Email server Port Number"
-					"Enter Email Subject"
+					"Enter Email Send Server",
+					"Enter Email server Port Number",
+					"Enter Email Subject",
 					"Enter email addresses to send to"]
 					
 	# default values to use
@@ -95,8 +95,14 @@ def main(args):
 		print("no file present so lets make", File_Read)
 		keybrd_interupt,cfgData,File_Edit_result = edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt)
 		File_Read = File_Full
-
-
+	check = input("Press Y to edit again:   ")
+	if check == "Y":
+		while True:
+			keybrd_interupt,cfgData,File_Edit_result = edit_cfgData(
+				cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt)
+			check = input("Press Y to edit again:   ")
+			if check != "Y":
+				break
 
 
 

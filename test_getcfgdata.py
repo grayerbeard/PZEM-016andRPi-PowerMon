@@ -4,8 +4,6 @@
 
 from cfgData import edit_cfgData , get_cfgData, password_decrypt
 
-
-
 def main(args):
 		# Format of cfgData Dictionary of configurationn data
 	#    key        :  variable used for 
@@ -62,7 +60,7 @@ def main(args):
 	# Call The module to be tested.
 	FileReadResult , cfgData = get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults)
 	
-	#  Act on the resuly of trying to read in the file.
+	#  Act on the result of trying to read in the file.
 	if FileReadResult == 2 :
 		print(cfgData)
 		File_Read = True
@@ -73,10 +71,15 @@ def main(args):
 	else:
 		File_Read =  False
 		print("no file present so lets make", File_Read)
-		keybrd_interupt,cfgData,File_Edit_result = edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt)
+		keybrd_interupt,cfgData,File_Edit_result = edit_cfgData(
+			cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt)
 		File_Read = File_Full
-
-
+		print("\n \n \n")
+	check = input("Do you want to edit cfgData Press Y to edit anything else to continue")
+	if check = "Y":
+		while True:
+			keybrd_interupt,cfgData,File_Edit_result = edit_cfgData(
+				cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt)
 
 
 

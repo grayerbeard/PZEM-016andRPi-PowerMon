@@ -41,46 +41,39 @@ except ImportError:
 		print("Error: import json module failed")
 		sys.exit()
 
-
-
 encoding = 'utf-8'
-# Regular expression for validating email
-regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
-def checkinputtype(inputItem):
+def checkInputType(inputItem):
 		# Determine the type of input
 	inType = 99 
 	try:
 	# Try to Convert it into integer
-		intval = int(inputItem)
-		if intval > 0:
-			inType = 1 # positive integer
+		intVal = int(inputItem)
+		if intVal > 0:
+			inType = "int" # positive integer
 			if intVal > 999999:
-				inType = 10 # Large Positive Integer
+				inType = "lint" # Large Positive Integer
 		else:
-			inType = -1 # negative integer
-			if intVal < 999999:
-				inType = -10 # Large Integer
+			inType = "nint" # negative integer
+			if intVal < -999999:
+				inType = "lnint" # Large Integer
 	except ValueError:
 		try:
 			# Convert it into float
-			floatval = float(inputItem)
-			if floatval > 0:
-				inType = 2 # positive float
-				if intVal > 999999:
-					inType = 20 # Large Positive Integer
+			floatVal = float(inputItem)
+			if floatVal > 0:
+				inType = "float" # Positive float
+				if floatVal > 999999:
+					inType = "lfloat" # Large Positive Float
 			else:
-				inType = 3 # negative float
-				if intVal < 999999:
-					inType = -20 # Large Positive Integer
+				inType = -2 # negative float
+				if floatVal < -999999:
+					inType = "lnfloat" # Large Negative Float
 		except ValueError:
-			print("failed convert to float")
 			if len(inputItem) > 5 :
-				print("string longer than 5")
-				inType = 5 # its a string of at least 6 characters
+				inType = "lstring" # its a string of at least 6 characters
 			else:
-				print("string shorter than 5")
-				inType = 4 # its a string
+				inType = "string" # its a string
 	print("Intype is : ",inType)
 	return inType
 
@@ -95,30 +88,34 @@ def check(inputItem,itemType):
 	#3 positive integer
 	#4 text
 		# Regular expression for validating email and server
-	if itemType in (0,5):
+	if itemType in ("email","emails"):
 		regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-	elif itemType == 2:
+	elif itemType == "server":
 		regex = r'\b[A-Za-z0-9._%+-]+\.[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 	else:
 		regex = ""
-	print("regex is : ",regex)
 
-	inType = checkinputtype(inputItem)
+	inType = checkInputType(inputItem)
 
 			# Check the input is the required type
 	result = False
-	if itemType in (1,4):  # should just be 6 characters or more
-		if inType in (5,20):
+	if itemType in ("pwd","subj"):  # should just be 6 characters or more
+		if inType in ("lstring","lint"):
 			result = True
-	elif itemType in (0,2,5): # should be an email or server
-		if(re.fullmatch(regex, inputItem)):
-			result = True
-	elif itemType == 3: # server port
-		if inType == (1,10):
+	elif itemType in ("email","server","emails"): # should be an email or server or list of email
+		if inType == "lstring":
+			print("checking pattern")
+			if(re.fullmatch(regex, inputItem)):
+				result = True
+	elif itemType == "port": # server port
+		if inType in ("int"):
 			result = True
 	else:
-		print("Error in Input test")
-	return False
+		print("Error in Input test item has no type")
+	if not result:
+		print("itemType  " ,itemType) 
+		print("inType  ", inType)
+	return result
 
 def compareKeys(requiredkeys,datasetkeys):
 	if len(requiredkeys) != len(datasetkeys):
@@ -211,41 +208,45 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 			indexList = 0
 			cfgDataItem = cfgData[key]
 			while True:
-				if cfgDataType[indexEdit] > 4 : # Its a list 
-					print("Editing a List: d delete item, f finish with list")
-					print("Existing Value: ",cfgDataItem[indexList])
+				if cfgDataType[indexEdit] == "emails" : # Its a list 
+					print("Editing List item: ",indexList, " d delete item, f finish with list")
 					print(cfgDataPrompt[indexEdit])
 					if indexList < len(cfgDataItem):
-						input_value = input() or cfgDataItem[indexList]
+						print("Existing Value: ",cfgDataItem[indexList])
+						inputValue = input() or cfgDataItem[indexList]
 					else:
-						input_value = input() 
-					if input_value == "d":
+						print("No Existing Value")
+						inputValue = input() 
+					if inputValue == "d":
 						del cfgDataItem[indexList]
 						print("Deleting old value")
-					elif (input_value == "f") and (indexList > 0):
+					elif (inputValue == "f") and (indexList > 0):
 						print("Finished editing Send to Emails")
 						cfgData[key] = cfgDataItem
 						break
-					elif (input_value == "f"):
+					elif (inputValue == "f"):
 						print("Must enter at least one send email address")
 					else:
-						if check(input_value,cfgDataType[indexEdit]):
-							cfgDataItem[indexList] = input_value
+						if check(inputValue,cfgDataType[indexEdit]):
+							if indexList < len(cfgDataItem):
+								cfgDataItem[indexList] = inputValue
+								print("replacing")
+							else:
+								cfgDataItem.append(inputValue)
+								print("appending")
 							indexList += 1
 						else:
-							print()
-							print("Not a valid email try again")
-							print()
+							print("\n Not a valid email try again \n")
 				else: # So Not a list
 					print("Existing Value: ",cfgDataItem)
-					print(cfgDataPrompt[indexEdit])
-					input_value = input() or cfgDataItem
-					if check(input_value,cfgDataType[indexEdit]):
-						cfgData[key] = input_value
+					print(key,indexEdit, cfgDataPrompt[indexEdit])
+					inputValue = input() or cfgDataItem
+					if check(inputValue,cfgDataType[indexEdit]):
+						cfgData[key] = inputValue
 						indexList += 1
 						break
 					else:
-						print("Entry no valid try again")
+						print("\n Entry no valid try again \n")
 
 #               All done editing
 
@@ -320,17 +321,17 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 				print("Number : ",email_to_count + 1, " Email address :",emailto[email_to_count])
 				print("Either enter replacement Or d to delete or enter to leave as is")
 	
-				input_value = input() or emailto[email_to_count]
+				inputValue = input() or emailto[email_to_count]
 	 
-				if input_value == "d":
+				if inputValue == "d":
 					del emailto[email_to_count]
 					print("Deleting old value")
-				elif input_value == "f":
+				elif inputValue == "f":
 					print("Finished editing Send to Emails")
 					break
 				else:
-					if check(input_value):
-						emailto[email_to_count] = input_value
+					if check(inputValue):
+						emailto[email_to_count] = inputValue
 						email_to_count += 1
 					else:
 						print()
@@ -341,17 +342,17 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 				print("Enter a new recipient's email for send email number: ",email_to_count +1)
 				print("when filished just enter f")
 				print("Enter a new value")
-				input_value = input()
-				if (input_value == "f") and email_to_count > 0:
+				inputValue = input()
+				if (inputValue == "f") and email_to_count > 0:
 					print("Finished editing send emails")
 					break
-				elif input_value == "f":
+				elif inputValue == "f":
 					print()
 					print("Must enter at least one send email")
 					print()
 				else:
-					if check(input_value):
-						emailto.append(input_value)
+					if check(inputValue):
+						emailto.append(inputValue)
 						print("Debug print emailto : ",len(emailto), emailto)
 						email_to_count += 1
 					else:
