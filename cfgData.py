@@ -47,12 +47,79 @@ encoding = 'utf-8'
 # Regular expression for validating email
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
-def check(email):
-	if(re.fullmatch(regex, email)):
-		return True
+def checkinputtype(inputItem):
+		# Determine the type of input
+	inType = 99 
+	try:
+	# Try to Convert it into integer
+		intval = int(inputItem)
+		if intval > 0:
+			inType = 1 # positive integer
+			if intVal > 999999:
+				inType = 10 # Large Positive Integer
+		else:
+			inType = -1 # negative integer
+			if intVal < 999999:
+				inType = -10 # Large Integer
+	except ValueError:
+		try:
+			# Convert it into float
+			floatval = float(inputItem)
+			if floatval > 0:
+				inType = 2 # positive float
+				if intVal > 999999:
+					inType = 20 # Large Positive Integer
+			else:
+				inType = 3 # negative float
+				if intVal < 999999:
+					inType = -20 # Large Positive Integer
+		except ValueError:
+			print("failed convert to float")
+			if len(inputItem) > 5 :
+				print("string longer than 5")
+				inType = 5 # its a string of at least 6 characters
+			else:
+				print("string shorter than 5")
+				inType = 4 # its a string
+	print("Intype is : ",inType)
+	return inType
+
+
+
+def check(inputItem,itemType):
+	encoding = 'utf-8'
+	# Data types to be tested are
+	#0 or >  4 are email
+	#1 password
+	#2 server
+	#3 positive integer
+	#4 text
+		# Regular expression for validating email and server
+	if itemType in (0,5):
+		regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+	elif itemType == 2:
+		regex = r'\b[A-Za-z0-9._%+-]+\.[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 	else:
-		return False
-		
+		regex = ""
+	print("regex is : ",regex)
+
+	inType = checkinputtype(inputItem)
+
+			# Check the input is the required type
+	result = False
+	if itemType in (1,4):  # should just be 6 characters or more
+		if inType in (5,20):
+			result = True
+	elif itemType in (0,2,5): # should be an email or server
+		if(re.fullmatch(regex, inputItem)):
+			result = True
+	elif itemType == 3: # server port
+		if inType == (1,10):
+			result = True
+	else:
+		print("Error in Input test")
+	return False
+
 def compareKeys(requiredkeys,datasetkeys):
 	if len(requiredkeys) != len(datasetkeys):
 		return False
@@ -108,8 +175,6 @@ def get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults):
 			if compareKeys(cfgDataRequiredKeys,File_cfgDataKeys):
 				FileReadResult = 2
 				print("File read and Keys correct")
-				
-				
 			else:
 				print("File Read but not all items there")
 				print("Required : ",cfgDataKeys)
@@ -120,14 +185,91 @@ def get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults):
 			return FileReadResult, cfgData
 
 	except IOError:
+		# There is no file so return a flag and the Default values.
 		FileReadResult = 0
 		print("No file found returned defaults")
 		print("Finished getCfgData, No File")
 		print()
 		return  FileReadResult,cfgDataDefaults
 
-def edit_cfgData(cfgDataFileName,File_Read,cfgData):	
+def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):	
+
+	# Data tpes in the cfgData could be these where <5 are single values and
+	# =>5 are lists.
+	#Types Are;
+	#0 email
+	#1 password
+	#2 server
+	#3 positive integer
+	#4 text
+	#5 list emails
+
 	try:
+		indexEdit = -1
+		for key in cfgData:
+			indexEdit += 1 # So will start at zero
+			indexList = 0
+			cfgDataItem = cfgData[key]
+			while True:
+				if cfgDataType[indexEdit] > 4 : # Its a list 
+					print("Editing a List: d delete item, f finish with list")
+					print("Existing Value: ",cfgDataItem[indexList])
+					print(cfgDataPrompt[indexEdit])
+					if indexList < len(cfgDataItem):
+						input_value = input() or cfgDataItem[indexList]
+					else:
+						input_value = input() 
+					if input_value == "d":
+						del cfgDataItem[indexList]
+						print("Deleting old value")
+					elif (input_value == "f") and (indexList > 0):
+						print("Finished editing Send to Emails")
+						cfgData[key] = cfgDataItem
+						break
+					elif (input_value == "f"):
+						print("Must enter at least one send email address")
+					else:
+						if check(input_value,cfgDataType[indexEdit]):
+							cfgDataItem[indexList] = input_value
+							indexList += 1
+						else:
+							print()
+							print("Not a valid email try again")
+							print()
+				else: # So Not a list
+					print("Existing Value: ",cfgDataItem)
+					print(cfgDataPrompt[indexEdit])
+					input_value = input() or cfgDataItem
+					if check(input_value,cfgDataType[indexEdit]):
+						cfgData[key] = input_value
+						indexList += 1
+						break
+					else:
+						print("Entry no valid try again")
+
+#               All done editing
+
+#               Put data into json file
+
+		with open(cfgDataFileName, 'w') as cfgDataFile:
+			json.dump(cfgData, cfgDataFile)
+		keybrd_interupt = False
+		File_Full = True
+		return keybrd_interupt,cfgData,File_Full			
+	except KeyboardInterrupt:
+		print()
+		print("Interupt while in edit_cfgData")
+		print()
+		# Interupt while editing so return current data and save it to file.
+		# Flag will be used in main prog to continue
+		with open(cfgDataFileName, 'w') as cfgDataFile:
+			json.dump(cfgData, cfgDataFile)
+		keybrd_interupt = True
+		# Signal if interupted when editing not finished
+		File_Full = File_read or (email_to_count >  0)
+		return keybrd_interupt,cfgData,File_Full
+
+#                          O R I G I N A L
 #                            Get emailFrom
 		while True:
 			if File_Read:
