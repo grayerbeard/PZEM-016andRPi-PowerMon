@@ -222,6 +222,8 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 						print("Deleting old value")
 					elif (inputValue == "f") and (indexList > 0):
 						print("Finished editing Send to Emails")
+						print("Old Value of List : ",cfgData[key])
+						print("New Value of List : ",cfgDataItem)
 						cfgData[key] = cfgDataItem
 						break
 					elif (inputValue == "f"):
@@ -229,6 +231,7 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 					else:
 						if check(inputValue,cfgDataType[indexEdit]):
 							if indexList < len(cfgDataItem):
+								cfgDataItem[indexList] = inputValue
 								print("replacing")
 							else:
 								cfgDataItem.append(inputValue)

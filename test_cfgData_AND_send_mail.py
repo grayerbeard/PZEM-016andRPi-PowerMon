@@ -24,6 +24,7 @@
 from send_mail import send_mail
 from datetime import datetime
 from cfgData import edit_cfgData , get_cfgData, password_decrypt
+
 # test changed again
 
 def main(args):
@@ -40,7 +41,7 @@ def main(args):
 	cfgDataFileName = "cfgData.json"
 	
 	#  Define a list of the keys required in the dictionary
-	cfgDataRequiredKeys = ["emailFrom","token","mailSMTP","mailPort","subject","emailTo"]
+	cfgDataRequiredKeys = ["emailFrom","token","mailSMTP","mailPort","subject","emailsTo"]
 	### Following Three Lines for Debug Only
 	#print("List of the required data Keys")
 	#for ind in range(0,len(cfgDataRequiredKeys)):
@@ -70,7 +71,7 @@ def main(args):
 						"mailSMTP" : "mail.server.com",
 						"mailPort": "465",
 						"subject": "Mail from Python",
-						"emailTo": ["first@nice.com"] }
+						"emailsTo": ["first@nice.com"] }
 
 	# Test the cfgData module
 
@@ -107,11 +108,11 @@ def main(args):
 #############################################################
 #				 	Test send email							#
 #############################################################
-
-	filenames = ['/home/pi/energyMaster/energyMaster_logDetails_Light.csv',
-				 '/home/pi/python3_test/simple_mail_send.txt',
-				 '/home/pi/python3_test/test_simple_mail_send.txt',
-				 '/home/pi/energyMaster/test.png']
+	embedtype = 'png' # This type gets enmbedde in the message
+	filenames = ['/home/pi/power-monitor/test_cfgData_AND_send_mail.txt',
+				 '/home/pi/power-monitor/send_mail.txt',
+				 '/home/pi/power-monitor/test.png']
+	date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	htmlintro = f'''
 		<html>
 			<body>

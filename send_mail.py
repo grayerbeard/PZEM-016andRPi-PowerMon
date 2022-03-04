@@ -34,7 +34,7 @@ from email.mime.application import MIMEApplication
 from cfgData import edit_cfgData , get_cfgData, password_decrypt
 import os
 import imghdr
-from datetime import datetime
+
 try:
 	import json
 except ImportError:
@@ -60,7 +60,6 @@ def attach_file_to_email(email_message, filename,ImageID = None):
 	# Add header/name to the attachments	
 	file_attachment.add_header("Content-Disposition",f"attachment; filename={os.path.basename(filename)}")
 	
-	dummy = dummy
 	# Set up the input extra_headers for img
 	## Default is None: since for regular file attachments, it's not needed
 	## When given a value: the following code will run
@@ -78,19 +77,19 @@ def send_mail(cfgData,htmlintro,filenames,embedtype):
 		#Generate the Password Key based on the MachineID
 # email_from	: a single email; address
 # token 		: the encrypted password
-# emails_to		: a list of email addresses to send emails to (can be just one)
+# emailsTo		: a list of email addresses to send emails to (can be just one)
 # mailSMTP		: the address of the server for sending email
 # mailPort		: port number for sending email e.g. 465
 # subject		: Text to put in the email subject
-	date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-  
-	for email_to in cfgData["emails_to"] :
-
+	print("emailsTo",cfgData["emailsTo"])
+	emailsTo  = cfgData["emailsTo"]
+	for emailTo in cfgData["emailsTo"] :
+		print("Sending to : ",emailTo)
 			# Create a MIMEMultipart class, and set up the From, To, Subject fields
 		email_message = MIMEMultipart()
-		email_message['From'] = cfgData['email_from']
-		email_message['To'] = email_to
-		email_message['Subject'] = date_str + " : " + cfgData["subject"] 
+		email_message['From'] = cfgData['emailFrom']
+		email_message['To'] = emailTo
+		email_message['Subject'] = cfgData["subject"] 
 
 			# Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
 		for rn in range(0,len(filenames)):
@@ -122,7 +121,12 @@ def send_mail(cfgData,htmlintro,filenames,embedtype):
 
 			# Connect to the Gmail SMTP server and Send Email
 		context = ssl.create_default_context()
-		with smtplib.SMTP_SSL(cfgData["mailSMTP"], cfgData["mailPort"], context=context) as server:
-			server.login(cfgData['email_from'], password_decrypt(cfgData['token']))
-			server.sendmail(cfgData['email_from'], email_to, email_string)
+		try:
+			with smtplib.SMTP_SSL(cfgData["mailSMTP"], cfgData["mailPort"],timeout = 1, context=context) as server:
+				server.login(cfgData['emailFrom'], password_decrypt(cfgData['token']))
+				server.sendmail(cfgData['emailFrom'], emailTo, email_string)
+		except Exception as ex:
+			template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print(message)
 
