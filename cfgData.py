@@ -229,7 +229,6 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 					else:
 						if check(inputValue,cfgDataType[indexEdit]):
 							if indexList < len(cfgDataItem):
-								cfgDataItem[indexList] = inputValue
 								print("replacing")
 							else:
 								cfgDataItem.append(inputValue)
@@ -238,15 +237,22 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 						else:
 							print("\n Not a valid email try again \n")
 				else: # So Not a list
-					print("Existing Value: ",cfgDataItem)
-					print(key,indexEdit, cfgDataPrompt[indexEdit])
-					inputValue = input() or cfgDataItem
-					if check(inputValue,cfgDataType[indexEdit]):
-						cfgData[key] = inputValue
-						indexList += 1
-						break
+					print("\n",key,indexEdit,cfgDataPrompt[indexEdit])
+					if cfgDataType[indexEdit] == "pwd":
+						inputValue = input() or password_decrypt(cfgDataItem)
+						if check(inputValue,cfgDataType[indexEdit]):
+							cfgData[key] = password_encrypt(inputValue)
+							break
+						else:
+							print("\n Entry not valid try again \n")	
 					else:
-						print("\n Entry no valid try again \n")
+						print("Existing Value: ",cfgDataItem)
+						inputValue = input() or cfgDataItem
+						if check(inputValue,cfgDataType[indexEdit]):
+							cfgData[key] = inputValue
+							break
+						else:
+							print("\n Entry not valid try again \n")
 
 #               All done editing
 
@@ -269,160 +275,6 @@ def edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt):
 		# Signal if interupted when editing not finished
 		File_Full = File_read or (email_to_count >  0)
 		return keybrd_interupt,cfgData,File_Full
-
-#                          O R I G I N A L
-#                            Get emailFrom
-		while True:
-			if File_Read:
-				print("existing Value for Senders Email :",cfgData['emailFrom'])
-				print("Enter new or Press enter to leave unchanged")
-			else:
-				cfgData['emailFrom'] = ""
-				print("Enter email SENDER's email address")   
-	
-			cfgData['emailFrom'] = input() or cfgData['emailFrom']
-			if check(cfgData['emailFrom']):
-				break
-			else:
-				print("Not a valid email try again")
-			
-		print("Send Email Address set to: ",cfgData['emailFrom'])
-	
-#                            Get Password and encrpt token
-		while True:
-			if File_Read:
-				print("There is an existing email send password set")
-				print("Enter new or press enter to leave as is")
-			else:
-				print("No existing pwd")
-				cfgData['token'] = ""
-				print("Enter email send PASSWORD")
-			cfgData['token'] = password_encrypt(input() or password_decrypt(cfgData['token']))
-			if len(cfgData['token']) > 4:
-				break
-			else:
-				print("Password required surely must be more than 4 characters")
-		print()
-		print("Password now :  ",password_decrypt(cfgData['token']))
-
-#                            Get email_to
-		if File_Read:
-			emailto = cfgData["emailTo"]
-			print()
-			print("Email to send to set to: ",cfgData["emailTo"])
-			print()
-		else:
-			emailto = []
-			# Zero count so that we start scanning through at first email
-		email_to_count = 0
-		while True :
-			#  Check if we are still editing entered emails or entering new ones
-			if email_to_count < len(emailto) and File_Read:
-				print("Number : ",email_to_count + 1, " Email address :",emailto[email_to_count])
-				print("Either enter replacement Or d to delete or enter to leave as is")
-	
-				inputValue = input() or emailto[email_to_count]
-	 
-				if inputValue == "d":
-					del emailto[email_to_count]
-					print("Deleting old value")
-				elif inputValue == "f":
-					print("Finished editing Send to Emails")
-					break
-				else:
-					if check(inputValue):
-						emailto[email_to_count] = inputValue
-						email_to_count += 1
-					else:
-						print()
-						print("Not a valid email try again")
-						print()
-			else:	
-				print()
-				print("Enter a new recipient's email for send email number: ",email_to_count +1)
-				print("when filished just enter f")
-				print("Enter a new value")
-				inputValue = input()
-				if (inputValue == "f") and email_to_count > 0:
-					print("Finished editing send emails")
-					break
-				elif inputValue == "f":
-					print()
-					print("Must enter at least one send email")
-					print()
-				else:
-					if check(inputValue):
-						emailto.append(inputValue)
-						print("Debug print emailto : ",len(emailto), emailto)
-						email_to_count += 1
-					else:
-						print("Not a valid email try again")
-		cfgData['emailTo'] = emailto
-
-				
-#							Get mailSMTP
-
-#							Get mailPort
-		while True:
-			try:
-				if File_Read:
-					print("There is an existing port number set at :", cfgData['mailPort'])
-					print("Enter new or press enter to leave as is")
-				else:
-					print("No existing port set so enter new Port Number")
-					cfgData['mailPort'] = "0"
-				mailPort = int(input("Enter Port Number")) or int(cfgData['mailPort'])
-				if 1 < mailPort < 9999:
-					cfgData['mailPort'] = str(mailPort)
-					break
-				else:
-					print("Enter correct port number between 1 and 9999")
-			except ValueError:
-					print("Enter a number")
-					print()
-		print()
-		print("email send SMTP Port now set to ",cfgData['mailPort'])
-
-#							Get subject
-		while True:
-			try:
-				if File_Read:
-					print("There is an existing subject :", cfgData['subject'])
-					print("Enter new or press enter to leave as is")
-				else:
-					print("No subject set so entersubject")
-					cfgData['mailPort'] = "0"
-				subject = input("Enter subject") or cfgData['subject']
-				if len(subject) > 4:
-					break
-				else:
-					print("Enter some subject text")
-			except ValueError:
-					print("Enter text")
-		print()
-		print("Subject now set to ",cfgData['subject'])
-
-#               All done editing
-
-#               Put data into filjson file
-		with open(cfgDataFileName, 'w') as cfgDataFile:
-			json.dump(cfgData, cfgDataFile)
-		keybrd_interupt = False
-		File_Full = True
-		return keybrd_interupt,cfgData,File_Full			
-	except KeyboardInterrupt:
-		print()
-		print("Interupt while in edit_cfgData")
-		print()
-		# Interupt while editing so return current data and save it to file.
-		# Flag will be used in main prog to continue
-		with open(cfgDataFileName, 'w') as cfgDataFile:
-			json.dump(cfgData, cfgDataFile)
-		keybrd_interupt = True
-		# Signal if interupted when editing not finished
-		File_Full = File_read or (email_to_count >  0)
-		return keybrd_interupt,cfgData,File_Full
-
 if __name__ == '__main__':
 	import sys
 	sys.exit(main(sys.argv))

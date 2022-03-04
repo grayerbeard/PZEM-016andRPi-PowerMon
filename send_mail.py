@@ -34,6 +34,7 @@ from email.mime.application import MIMEApplication
 from cfgData import edit_cfgData , get_cfgData, password_decrypt
 import os
 import imghdr
+from datetime import datetime
 try:
 	import json
 except ImportError:
@@ -72,7 +73,7 @@ def attach_file_to_email(email_message, filename,ImageID = None):
 	# Attach the file to the message
 	email_message.attach(file_attachment)
 
-def send_mail(cfgData,subject,htmlintro,filenames,embedtype):
+def send_mail(cfgData,htmlintro,filenames,embedtype):
 
 		#Generate the Password Key based on the MachineID
 # email_from	: a single email; address
@@ -81,23 +82,15 @@ def send_mail(cfgData,subject,htmlintro,filenames,embedtype):
 # mailSMTP		: the address of the server for sending email
 # mailPort		: port number for sending email e.g. 465
 # subject		: Text to put in the email subject
-
-
-
-	mailSMTP = cfgData["mailSMTP"]
-	mailPort = cfgData["mailPort"]
-	password = cfgData["token"]
-	email_from = cfgData["email_from"]
-	emails_to = cfgData["emails_to"]
-	subject = cfgData["subject"]
+	date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
   
-	for email_to in emails_to :
+	for email_to in cfgData["emails_to"] :
 
 			# Create a MIMEMultipart class, and set up the From, To, Subject fields
 		email_message = MIMEMultipart()
 		email_message['From'] = cfgData['email_from']
 		email_message['To'] = email_to
-		email_message['Subject'] = subject # 
+		email_message['Subject'] = date_str + " : " + cfgData["subject"] 
 
 			# Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
 		for rn in range(0,len(filenames)):
@@ -124,14 +117,12 @@ def send_mail(cfgData,subject,htmlintro,filenames,embedtype):
 			else:	
 				attach_file_to_email(email_message,filenames[rn])
  
-	
 			# Convert it as a string
 		email_string = email_message.as_string()
-	
 
 			# Connect to the Gmail SMTP server and Send Email
 		context = ssl.create_default_context()
-		with smtplib.SMTP_SSL(mailSMTP, mailPort, context=context) as server:
+		with smtplib.SMTP_SSL(cfgData["mailSMTP"], cfgData["mailPort"], context=context) as server:
 			server.login(cfgData['email_from'], password_decrypt(cfgData['token']))
 			server.sendmail(cfgData['email_from'], email_to, email_string)
 

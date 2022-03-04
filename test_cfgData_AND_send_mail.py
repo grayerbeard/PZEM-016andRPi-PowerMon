@@ -104,25 +104,10 @@ def main(args):
 			if check != "Y":
 				break
 
-
-
 #############################################################
 #				 	Test send email							#
 #############################################################
 
-
-	# TEMP STOP HERE ##################################################################
-	return 0
-
-	date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	mailSMTP = 'mail.smalle.uk'
-	mailPort =  465
-	embedtype = 'png'
-	password = 'TU6v65niddy'
-	email_from  = 'rpi_send@smalle.uk'
-	emails_to = ['djgtorrens@gmail.com',
-				'david.torrens@outlook.com',
-				'djgtorrens@yahoo.co.uk']
 	filenames = ['/home/pi/energyMaster/energyMaster_logDetails_Light.csv',
 				 '/home/pi/python3_test/simple_mail_send.txt',
 				 '/home/pi/python3_test/test_simple_mail_send.txt',
@@ -133,10 +118,7 @@ def main(args):
 				<h1>WMIS Energy Report {date_str}</h1>
 				<p>Hello, welcome to your report!</p>
 				'''
-
-	
-	subject = f'WMIS Energy Report - {date_str}'
-	send_mail(mailSMTP,mailPort,password,email_from,emails_to,subject,htmlintro,filenames,embedtype)
+	send_mail(cfgData,htmlintro,filenames,embedtype)
 	return 0
 
 if __name__ == '__main__':
