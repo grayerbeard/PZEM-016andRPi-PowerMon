@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# title           :sauna.py
-# description     :pwm control for R Pi Cooling Fan, main progrm
+# title           :powerMonitor.py
+# description     :plogging of shed power use
 # author          :David Torrens
-# start date      :2019 12 12
-# version         :0.2 May 2020
+# start date      :2022 03 07
+# version         :0.1 March 2022
 # python_version  :3
 
 # Standard library imports
@@ -44,6 +44,9 @@ from utility import fileexists,pr,make_time_text
 from sensor import class_my_sensors
 from pzemdt import readAcPZEM 
 
+from send_mail import send_mail
+from cfgData import edit_cfgData , get_cfgData, password_decrypt
+
 #Set up Config file and read it in if present
 config = class_config()
 if fileexists(config.config_filename):		
@@ -58,10 +61,6 @@ config.scan_count = 0
 headings = ["Count","Voltage","Amps","Power","Energy","Hz","PF","Alarm","Message"]
 log_buffer = class_text_buffer(headings,config)
 
-###
-#pwm = class_pwm(config)
-###
-#control = class_control(config)
 sensor = class_my_sensors(config)
 
 # Set The Initial Conditions
@@ -70,99 +69,129 @@ last_total = 0
 loop_time = 0
 correction = 7.5
 # Ensure start right by inc buffer
-last_fan_state = True
-buffer_increment_flag = False
-refresh_time = 4.2*config.scan_delay
-shut_down_logic_target_reached = False
-shut_down_logic_last_temp_reading = 20
-shut_down_logic_temp_reducing_count = False
-shut_down_logic_count = 0
-message = "Not Yet"
-print("########################################################################### !!!!! May 11th")
+#last_fan_state = True
+#buffer_increment_flag = False
+refresh_time = 2 * config.scan_delay # How often to refresh the browser display#
 
 chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
 chanAddrs = [0x01, 0x01]
 chan = 0
 
 lastLoggedReadings = readAcPZEM(chanPorts[chan], chanAddrs[chan],headings)
+scansSinceLog = 0
+scansSinceEmail = 0
+
+#  Shed open times
+daysOpen = (3,4)
+openTime =  7
+closeTime = 17
+
+
+
+#                 cfgData File for Email
+
+# Format of cfgData Dictionary of configurationn data
+#    key        :  variable used for 
+# emailFrom		: a single email; address
+# token 		: the encrypted password
+# mailSMTP		: the address of the server for sending email
+# mailPort		: port number for sending email e.g. 465
+# subject		: Text to put in the email subject
+# emailTo		: a list of email addresses to send emails to (can be just one)
+
+# Define file name
+cfgDataFileName = "cfgData.json"
+
+#  Define a list of the keys required in the dictionary
+cfgDataRequiredKeys = ["emailFrom","token","mailSMTP","mailPort","subject","emailsTo"]
+
+#Types Are;
+#0 email
+#1 password
+#2 server
+#3 positive integer
+#4 text
+#5 list emails
+
+# The test types to apply when the data is read i
+cfgDataType = ["email","pwd","server","port","subj","emails"]
+
+# Prompts to the user when he enters values to put in the dictionary
+cfgDataPrompt = ["Enter email address for sending Emails",
+				"Enter Password for email sending",
+				"Enter Email Send Server",
+				"Enter Email server Port Number",
+				"Enter Email Subject",
+				"Enter email addresses to send to"]
+				
+# default values to use
+cfgDataDefaults = {"emailFrom" : "from@sender.com",
+					"token": "@@@@@@@@@",
+					"mailSMTP" : "mail.server.com",
+					"mailPort": "465",
+					"subject": "Mail from Python",
+					"emailsTo": ["first@nice.com"] }
+# parameters for sending email
+embedtype = 'png' # This type gets enmbedde in the message
+filenames = ['/home/pi/power-monitor/test_cfgData_AND_send_mail.txt',
+			 '/home/pi/power-monitor/send_mail.txt',
+			 '/home/pi/power-monitor/test.png']
+date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+htmlintro = f'''
+	<html>
+		<body>
+			<h1>WMIS Energy Report {date_str}</h1>
+			<p>Hello, welcome to your report!</p>
+			'''
+# 
+FileReadResult , cfgData = get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults)
+	#  Act on the resuly of trying to read in the file.
+
+if FileReadResult != 2:
+	keybrd_interupt,cfgData,File_Edit_result = \
+		edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt)
 
 while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 	try:
 		# Loop Management and Watchdog
-		loop_start_time = datetime.now()
-		
-		# Control
+		lst = datetime.now()
+		if not((lst.weekday() in daysOpen) and (openTime <= lst.hour < closeTime)):
+			message = "shed closed"
+			shedClosed = True
+		else:
+			message = "shed open"
 		temp = sensor.get_temp()
-		###
-		#control.calc(temp)
-		###
-		#pwm.control_heater(control.freq,control.speed)
-		
-		# Shutdown Logics
-		change = round(temp - shut_down_logic_last_temp_reading,3)
-		
-		
-		### #### ###
-		#if temp > config.min_temp:
-		#	shut_down_logic_target_reached = True
-		#	message = "Over Min Temp and loop time Correction is: " + str(round(correction,2))
-		#	shut_down_logic_count = 0 
-		#else:
-		#	message = "Under Min Temp and loop time Correction is: " + str(round(correction,2))
-		#if (control.throttle == 100) and shut_down_logic_target_reached and (temp < shut_down_logic_last_temp_reading):
-		#	shut_down_logic_count += 1
-		
-
-		shut_down_logic_last_temp_reading = temp
-
-		###
-		#voltage, amperage, power, energy, frequency, powerFactor, alarmStatus =
-		#	 readAcPZEM(chanPorts[chan], chanAddrs[chan])
 		pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan],headings)
 		# Logging
 		
 		pzem_reading[headings[0]] = str(round(config.scan_count,3))
-		pzem_reading[headings[len(headings)-1]]= "sample message"
+		pzem_reading[headings[len(headings)-1]]= message
 		
 		minPowerToLog = 10
-		minEnergyChangeToLog = 0.5
-		#print("power?",headings[3])
-		#print("energy?",headings[4])
-		if (int(pzem_reading[headings[3]]) > minPowerToLog ) and
-				((int(pzem_reading[headings[4]] - lastLoggedReadings[headings[4]]) >minEnergyChangeToLog): #  put test here
+		minEnergyChangeToLog = 10
+		LimitScansSinceLog  =  10
+		LimitScansSinceEmail = 20
+		
+		if ((float(pzem_reading[headings[3]]) > minPowerToLog )  and \
+			(float(pzem_reading[headings[4]]) - float(lastLoggedReadings[headings[4]])) \
+			> minEnergyChangeToLog) :
+			powerBeingUsed = True
+		if ((scansSinceLog > LimitScansSinceLog) and powerBeingUsed) or  (config.scan_count < 2): 
 			log_buffer.line_values = pzem_reading
-			log_buffer.pr(True,0,loop_start_time,refresh_time)
-		#if thisIsFirst:
-		#if True:	
-		#	log_buffer.line_values[headings[0]] = str(round(config.scan_count,3))
-		#	itemIndex = 0
-		#	for itemIndex in range(1,len(log_buffer.line_values)):
-		#		print(itemIndex, pzem_reading[itemIndex - 1])
-		#		print(headings[itemIndex])
-		#		print(log_buffer.line_values[headings[itemIndex]])
-		#		log_buffer.line_values[headings[itemIndex]] = str(round(pzem_reading[itemIndex - 1],2))
-		#		itemIndex +=1
-		#log_buffer.line_values[1] = str(round(temp,2)) + "C"
-		###
-		#log_buffer.line_values[2] = str(round(123,1))+ "%"
-		###
-		#log_buffer.line_values[3] = str(round(124,1)) + "%"
-		###
-		#log_buffer.line_values[4] = str(round(125,3)) + "Hz"
-		#log_buffer.line_values[5] = str(round(change,2)) + " Shut Down Count: "
-		#log_buffer.line_values[6] = str(shut_down_logic_count)
-		#log_buffer.line_values[7] = message
-		
-		
-		#do Shutdown if temperature keeps dropping and target reached
-		if  shut_down_logic_count > 10 :
-			call("sudo shutdown -h now", shell=True)
-	
+			log_buffer.pr(True,0,lst,refresh_time)
+			lastLoggedReadings = pzem_reading
+			if shedClosed and powerBeingUsed and (scansSinceEmail > LimitScansSinceEmail):
+				send_mail(cfgData,htmlintro,filenames,embedtype)
+				scansSinceEmail = 0
+			config.scan_count += 1
+			scansSinceLog = -1
+			
+		scansSinceLog += 1
+		scansSinceEmail += 1
+
 		# Loop Managemnt
 		loop_end_time = datetime.now()
-		loop_time = (loop_end_time - loop_start_time).total_seconds()
-		config.scan_count += 1
-		
+		loop_time = (loop_end_time - lst).total_seconds()
 		# Adjust the sleep time to aceive the target loop time and apply
 		# with a slow acting correction added in to gradually improve accuracy
 		if loop_time < (config.scan_delay - (correction/1000)):
@@ -171,8 +200,6 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 				time_sleep(sleep_time)
 			except KeyboardInterrupt:
 				print(".........Ctrl+C pressed... Output Off")
-				###
-				#pwm.control_heater(control.freq,0)
 				time_sleep(10)
 				sys_exit()
 			except ValueError:
@@ -198,8 +225,6 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 			# print("Error correcting OK, Error : ",error,"  Correction : ", correction)
 	except KeyboardInterrupt:
 		print(".........Ctrl+C pressed... Output Off")
-		###
-		#pwm.control_heater(control.freq,0)
 		time_sleep(10) 
 		sys_exit()
 

@@ -42,10 +42,7 @@ def main(args):
 	
 	#  Define a list of the keys required in the dictionary
 	cfgDataRequiredKeys = ["emailFrom","token","mailSMTP","mailPort","subject","emailsTo"]
-	### Following Three Lines for Debug Only
-	#print("List of the required data Keys")
-	#for ind in range(0,len(cfgDataRequiredKeys)):
-	#	print(ind, " : ",cfgDataRequiredKeys[ind])
+
 	#Types Are;
 	#0 email
 	#1 password

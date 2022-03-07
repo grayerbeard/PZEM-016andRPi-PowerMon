@@ -192,7 +192,7 @@ class class_text_buffer(object):
 		i = 0
 		#for i in range(0,self.__width -1):
 		for key in self.line_values:
-			print(key, " : ",self.line_values[key])
+			#print(key, " : ",self.line_values[key])
 			make_values[i+1] = self.line_values[key]
 			for_screen = for_screen + " " + self.line_values[key]
 			i += 1

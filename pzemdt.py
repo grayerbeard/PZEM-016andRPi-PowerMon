@@ -143,14 +143,6 @@ if __name__ == '__main__':
 	chan = 0
 	print("Test PZEM-016 module on ", chanPorts[chan], " with channel address of ", chanAddrs[chan], "by performing read of 10 registers:")
 	pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan])
-	#voltage, amperage, power, energy, frequency, powerFactor, alarmStatus = readAcPZEM(chanPorts[chan], chanAddrs[chan])
-	#print(str(voltage) + 'V')
-	#print(str(amperage) + 'A')
-	#print(str(power) + 'W')
-	#print(str(energy) + 'Wh')
-	#print(str(frequency) + 'Hz')
-	#print(str(powerFactor) + " power factor")
-	#print(str(alarmStatus) + " alarm status")
 	itemIndex = 0
 	for key in pzem_reading:
 		print(str(round(pzem_reading[key],2)))
