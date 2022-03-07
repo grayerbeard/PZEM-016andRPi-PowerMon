@@ -80,6 +80,12 @@ shut_down_logic_count = 0
 message = "Not Yet"
 print("########################################################################### !!!!! May 11th")
 
+chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
+chanAddrs = [0x01, 0x01]
+chan = 0
+
+lastLoggedReadings = readAcPZEM(chanPorts[chan], chanAddrs[chan],headings)
+
 while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 	try:
 		# Loop Management and Watchdog
@@ -105,25 +111,37 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 		#	message = "Under Min Temp and loop time Correction is: " + str(round(correction,2))
 		#if (control.throttle == 100) and shut_down_logic_target_reached and (temp < shut_down_logic_last_temp_reading):
 		#	shut_down_logic_count += 1
+		
 
 		shut_down_logic_last_temp_reading = temp
-		chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
-		chanAddrs = [0x01, 0x01]
-		chan = 0
+
 		###
 		#voltage, amperage, power, energy, frequency, powerFactor, alarmStatus =
 		#	 readAcPZEM(chanPorts[chan], chanAddrs[chan])
-		pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan])
+		pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan],headings)
 		# Logging
 		
-		 
-		log_buffer.line_values[0] = str(round(config.scan_count,3))
-		itemIndex = 0
-		for key in pzem_reading:
-			###
-			#print(itemIndex,pzem_reading[key])
-			log_buffer.line_values[itemIndex+1] = str(round(pzem_reading[key],2))
-			itemIndex +=1
+		pzem_reading[headings[0]] = str(round(config.scan_count,3))
+		pzem_reading[headings[len(headings)-1]]= "sample message"
+		
+		minPowerToLog = 10
+		minEnergyChangeToLog = 0.5
+		#print("power?",headings[3])
+		#print("energy?",headings[4])
+		if (int(pzem_reading[headings[3]]) > minPowerToLog ) and
+				((int(pzem_reading[headings[4]] - lastLoggedReadings[headings[4]]) >minEnergyChangeToLog): #  put test here
+			log_buffer.line_values = pzem_reading
+			log_buffer.pr(True,0,loop_start_time,refresh_time)
+		#if thisIsFirst:
+		#if True:	
+		#	log_buffer.line_values[headings[0]] = str(round(config.scan_count,3))
+		#	itemIndex = 0
+		#	for itemIndex in range(1,len(log_buffer.line_values)):
+		#		print(itemIndex, pzem_reading[itemIndex - 1])
+		#		print(headings[itemIndex])
+		#		print(log_buffer.line_values[headings[itemIndex]])
+		#		log_buffer.line_values[headings[itemIndex]] = str(round(pzem_reading[itemIndex - 1],2))
+		#		itemIndex +=1
 		#log_buffer.line_values[1] = str(round(temp,2)) + "C"
 		###
 		#log_buffer.line_values[2] = str(round(123,1))+ "%"
@@ -133,8 +151,8 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 		#log_buffer.line_values[4] = str(round(125,3)) + "Hz"
 		#log_buffer.line_values[5] = str(round(change,2)) + " Shut Down Count: "
 		#log_buffer.line_values[6] = str(shut_down_logic_count)
-		log_buffer.line_values[7] = message
-		log_buffer.pr(True,0,loop_start_time,refresh_time)
+		#log_buffer.line_values[7] = message
+		
 		
 		#do Shutdown if temperature keeps dropping and target reached
 		if  shut_down_logic_count > 10 :

@@ -56,8 +56,11 @@ class class_text_buffer(object):
 		    os.makedirs('log')
 
 		self.__source_ref = 0 # a number used to control prevention repeat messages
-		self.__width = len(headings) + 1                     
-		self.line_values = ["1"]*len(headings)
+		self.__width = len(headings) + 1
+		###                     
+		#self.line_values = ["1"]*len(headings)
+		
+		self.line_values = {} 
 		self.__dta = [ [ None for di in range(self.__width+1) ] for dj in range(self.__config.text_buffer_length+1) ]
 		self.__size = 0
 		self.__posn = self.__config.text_buffer_length-1
@@ -107,8 +110,14 @@ class class_text_buffer(object):
 		if len(values) > self.__width :
 			print("Width Error for :",self.__config.prog_name, len(values) , self.__width, values)
 			sys.exit()
-		for i in range(0,len(values)):
-			self.__dta[self.__posn][i] = values[i]
+		###
+		#for i in range(0,len(values)):
+		#	self.__dta[self.__posn][i] = values[i]
+
+		i = 0
+		for value in values:
+			self.__dta[self.__posn][i] = value
+			i += 1
 
 		#print("Buffer updated and log buffer flag is : ",self.__config.log_buffer_flag)
 		if self.__config.log_buffer_flag:
@@ -179,14 +188,18 @@ class class_text_buffer(object):
 		file_end = """
 </body>
 </html>"""
-		try:
-			for i in range(0,self.__width -1):
-				make_values[i+1] = str(self.line_values[i])
-				for_screen = for_screen + " " + str(self.line_values[i])
-		except:
-			print("Error in make values in ...buffer.pr for : ",self.__config.prog_name)
-			print("i,values,len(self.line_value>s),self.__width",i,self.line_values,len(self.line_values),self.__width)
-			sys_exit()
+		#try:
+		i = 0
+		#for i in range(0,self.__width -1):
+		for key in self.line_values:
+			print(key, " : ",self.line_values[key])
+			make_values[i+1] = self.line_values[key]
+			for_screen = for_screen + " " + self.line_values[key]
+			i += 1
+		#except:
+		#	print("Error in make values in ...buffer.pr for : ",self.__config.prog_name)
+		#	print("i,values,len(self.line_value>s),self.__width",i,self.line_values,len(self.line_values),self.__width)
+		#	sys_exit()
 				
 		# print to screen and to status log and update html file
 		
@@ -224,7 +237,7 @@ class class_text_buffer(object):
 		except:
 			print("Not able to copy : ",self.__html_filename, " to ", self.__www_filename)
 		
-		message =  self.line_values[1]
+		#message =  self.line_values[1]
 		
 		#try:
 		#	print("no mqtt")
