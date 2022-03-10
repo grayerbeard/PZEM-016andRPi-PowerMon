@@ -44,7 +44,7 @@ from utility import fileexists,pr,make_time_text
 from sensor import class_my_sensors
 from pzemdt import readAcPZEM 
 
-from send_mail import send_mail
+from sendMail import sendMail
 from cfgData import edit_cfgData , get_cfgData, password_decrypt
 
 #Set up Config file and read it in if present
@@ -133,9 +133,9 @@ cfgDataDefaults = {"emailFrom" : "from@sender.com",
 					"emailsTo": ["first@nice.com"] }
 # parameters for sending email
 embedtype = 'png' # This type gets enmbedde in the message
-filenames = ['/home/pi/power-monitor/test_cfgData_AND_send_mail.txt',
-			 '/home/pi/power-monitor/send_mail.txt',
+filenames = ['/home/pi/power-monitor/powerMonitor_log.html',
 			 '/home/pi/power-monitor/test.png']
+print(filenames)
 date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 htmlintro = f'''
 	<html>
@@ -143,16 +143,30 @@ htmlintro = f'''
 			<h1>WMIS Energy Report {date_str}</h1>
 			<p>Hello, welcome to your report!</p>
 			'''
-# 
+			
+minPowerToLog = 60
+minEnergyChangeToLog = 5
+LimitScansSinceLog  =  10
+LimitScansSinceEmail = 20
+LimitScansMustLog = 58  #  USUALLY 58     5 minutes diided by 5 -2
+sleep_time = config.scan_delay
+ 
 FileReadResult , cfgData = get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults)
 	#  Act on the resuly of trying to read in the file.
 
-if FileReadResult != 2:
+if FileReadResult == 2 :
+	print(cfgData)
+	File_Read = True
+	print("cfgData File read and all items present")
+else:
+	File_Read = False
 	keybrd_interupt,cfgData,File_Edit_result = \
 		edit_cfgData(cfgDataFileName,File_Read,cfgData,cfgDataType,cfgDataPrompt)
 
 while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 	try:
+		print("config.scan_count : ", config.scan_count, "  scansSinceLog : ",
+		  scansSinceLog, "  scansSinceEmail : ",scansSinceEmail," slp: ",sleep_time)
 		# Loop Management and Watchdog
 		lst = datetime.now()
 		if not((lst.weekday() in daysOpen) and (openTime <= lst.hour < closeTime)):
@@ -160,6 +174,7 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 			shedClosed = True
 		else:
 			message = "shed open"
+			shedClosed = False
 		temp = sensor.get_temp()
 		pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan],headings)
 		# Logging
@@ -167,21 +182,19 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 		pzem_reading[headings[0]] = str(round(config.scan_count,3))
 		pzem_reading[headings[len(headings)-1]]= message
 		
-		minPowerToLog = 10
-		minEnergyChangeToLog = 10
-		LimitScansSinceLog  =  10
-		LimitScansSinceEmail = 20
+		powerBeingUsed = False
 		
 		if ((float(pzem_reading[headings[3]]) > minPowerToLog )  and \
 			(float(pzem_reading[headings[4]]) - float(lastLoggedReadings[headings[4]])) \
 			> minEnergyChangeToLog) :
 			powerBeingUsed = True
-		if ((scansSinceLog > LimitScansSinceLog) and powerBeingUsed) or  (config.scan_count < 2): 
+		if ((scansSinceLog > LimitScansSinceLog) and powerBeingUsed) or  (config.scan_count < 2) \
+				or (scansSinceLog > LimitScansMustLog): 
 			log_buffer.line_values = pzem_reading
 			log_buffer.pr(True,0,lst,refresh_time)
-			lastLoggedReadings = pzem_reading
+			last8LoggedReadings = pzem_reading
 			if shedClosed and powerBeingUsed and (scansSinceEmail > LimitScansSinceEmail):
-				send_mail(cfgData,htmlintro,filenames,embedtype)
+				sendMail(cfgData,htmlintro,filenames,log_buffer.logFile,embedtype,log_buffer.email_html)
 				scansSinceEmail = 0
 			config.scan_count += 1
 			scansSinceLog = -1
@@ -189,7 +202,7 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 		scansSinceLog += 1
 		scansSinceEmail += 1
 
-		# Loop Managemnt
+		# Loop Managemntn^^^
 		loop_end_time = datetime.now()
 		loop_time = (loop_end_time - lst).total_seconds()
 		# Adjust the sleep time to aceive the target loop time and apply
@@ -199,14 +212,14 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 			try:
 				time_sleep(sleep_time)
 			except KeyboardInterrupt:
-				print(".........Ctrl+C pressed... Output Off")
+				print("........Ctrl+C pressed... Output Off")
 				time_sleep(10)
 				sys_exit()
 			except ValueError:
 				print("sleep_Time Error value is: ",sleep_time, "loop_time: ",
 				      loop_time,"correction/1000 : ",correction/1000)
 				print("Will do sleep using config.scan_delay and reset correction to 7.5msec")
-				correction = 7.5
+				cor66rection = 7.5
 				time_sleep(config.scan_delay)
 			except Exception:
 				print("some other error with time_sleep try with config.scan_delay")

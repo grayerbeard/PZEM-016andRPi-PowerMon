@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  send_mail.py
+#  sendMail.py
 #  
 #  Copyright 2022  <pi@RPi4Shed>
 #  
@@ -72,7 +72,7 @@ def attach_file_to_email(email_message, filename,ImageID = None):
 	# Attach the file to the message
 	email_message.attach(file_attachment)
 
-def send_mail(cfgData,htmlintro,filenames,embedtype):
+def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 
 		#Generate the Password Key based on the MachineID
 # email_from	: a single email; address
@@ -100,15 +100,16 @@ def send_mail(cfgData,htmlintro,filenames,embedtype):
 				html = f'''{htmlintro}<img src='cid:{ImageID}' width="700">
 						'''
 				print(rn,filenames[0][rn],"  Will be embedded.")
-		html = f'''{html}
+		html = f'''{html} {loghtml}
 			</body>
 		</html>
 		'''
-		print(html)
+		#print(html)
 	
 		email_message.attach(MIMEText(html, "html"))
 			#Attach Files
-		print(len(filenames))	
+		filenames.append(logFile)
+		print("filenames in email : ",filenames)
 		for rn in range(0,len(filenames)):
 			#print(filenames[0][rn],filenames[1][rn])
 			if imghdr.what(filenames[rn]) == embedtype:

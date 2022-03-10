@@ -61,6 +61,7 @@ class class_text_buffer(object):
 		#self.line_values = ["1"]*len(headings)
 		
 		self.line_values = {} 
+		self.email_html = "<p> No Log yet </p>"
 		self.__dta = [ [ None for di in range(self.__width+1) ] for dj in range(self.__config.text_buffer_length+1) ]
 		self.__size = 0
 		self.__posn = self.__config.text_buffer_length-1
@@ -76,6 +77,7 @@ class class_text_buffer(object):
 		self.__www_filename = config.local_dir_www + "/" + self.__html_filename
 		self.__ftp_creds = config.ftp_creds_filename
 		self.__send_html_count = 0
+		self.logFile = ""
 		if self.__config.log_buffer_flag:
 			self.__send_log_count = 0
 			self.__log = class_buffer_log(config)
@@ -93,6 +95,7 @@ class class_text_buffer(object):
 	def update_buffer(self,values,appnd,ref):
 		#append a line of info at the current position plus 1 
 		# print("Update Buffer appnd and ref are : ",appnd,ref)
+		print("Growing Buffer?  : ",self.__size," >> ",self.__config.text_buffer_length)
 		if appnd + (self.__source_ref != ref):
 			#we adding message and incrementing posn
 			if self.__size < self.__config.text_buffer_length-1 :
@@ -212,25 +215,34 @@ class class_text_buffer(object):
 		with open(self.__html_filename,'w') as htmlfile:
 			htmlfile.write(file_start)
 			if self.__config.log_buffer_flag:
+				self.logFile = self.__config.log_directory + self.__log.log_filename
 				htmlfile.write('<p>' + self.__html_filename + ' : ' + 
 					make_time_text(datetime.now())  + '      ' +
-					'<a href= "' + self.__config.log_directory + self.__log.log_filename + 
+					'<a href= "' + self.logFile + 
 					'" target="_blank"> View CSV Log File </a></p>\n<p>')
 			else:
 				htmlfile.write("<p>" + self.__html_filename + " : " + 
 					make_time_text(datetime.now())  + "</p>\n<p>")
 			htmlfile.write(tbl_start + tbl_start_line)
+			self.email_html = tbl_start + tbl_start_line
 			for ind in range(0,len(self.__headings)):
 				htmlfile.write(tbl_start_col + self.__headings[ind] + tbl_end_col)
+				self.email_html = self.email_html + tbl_start_col + self.__headings[ind] + tbl_end_col
 			htmlfile.write(tbl_end_line)
+			self.email_html = self.email_html + tbl_end_line
 			buffer_dta = self.get_dta()
 			for ind in range(self.__size):
 				htmlfile.write(tbl_start_line)
+				self.email_html = self.email_html + tbl_start_line
 				for i in range(self.__width):
 					htmlfile.write(tbl_start_col + str(buffer_dta[ind][i]) + tbl_end_col)
+					self.email_html = self.email_html + tbl_start_col + str(buffer_dta[ind][i]) + tbl_end_col
 				htmlfile.write(tbl_end_line)
+				self.email_html = self.email_html + tbl_end_line
 			htmlfile.write(tbl_end)
+			self.email_html = self.email_html + tbl_end
 			htmlfile.write(file_end)
+			self.email_html = self.email_html + file_end
 		
 		try:
 			copyfile(self.__html_filename, self.__www_filename)
