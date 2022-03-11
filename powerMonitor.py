@@ -82,7 +82,7 @@ scansSinceLog = 0
 scansSinceEmail = 0
 
 #  Shed open times
-daysOpen = (3,4)
+daysOpen = (2,3)
 openTime =  7
 closeTime = 17
 
@@ -165,8 +165,9 @@ else:
 
 while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 	try:
-		print("config.scan_count : ", config.scan_count, "  scansSinceLog : ",
-		  scansSinceLog, "  scansSinceEmail : ",scansSinceEmail," slp: ",sleep_time)
+		###
+		#print("config.scan_count : ", config.scan_count, "  scansSinceLog : ",
+			#scansSinceLog, "  scansSinceEmail : ",scansSinceEmail," slp: ",sleep_time)
 		# Loop Management and Watchdog
 		lst = datetime.now()
 		if not((lst.weekday() in daysOpen) and (openTime <= lst.hour < closeTime)):

@@ -95,7 +95,8 @@ class class_text_buffer(object):
 	def update_buffer(self,values,appnd,ref):
 		#append a line of info at the current position plus 1 
 		# print("Update Buffer appnd and ref are : ",appnd,ref)
-		print("Growing Buffer?  : ",self.__size," >> ",self.__config.text_buffer_length)
+		###
+		#print("Growing Buffer?  : ",self.__size," >> ",self.__config.text_buffer_length)
 		if appnd + (self.__source_ref != ref):
 			#we adding message and incrementing posn
 			if self.__size < self.__config.text_buffer_length-1 :
@@ -206,10 +207,11 @@ class class_text_buffer(object):
 				
 		# print to screen and to status log and update html file
 		
-		if appnd:
-			print("    appending : " + self.__config.prog_name + " : " + for_screen)
-		else:
-			print("not appending : " + self.__config.prog_name + " : " + for_screen)
+		#if appnd:
+		#	print(" a/" + self.__config.prog_name + "/" + for_screen)
+		#else:
+		#	print("na/" + self.__config.prog_name + "/" + for_screen)
+		print(for_screen)
 
 		self.update_buffer(make_values,appnd,ref)
 		with open(self.__html_filename,'w') as htmlfile:
