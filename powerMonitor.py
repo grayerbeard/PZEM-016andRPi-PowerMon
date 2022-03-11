@@ -133,8 +133,8 @@ cfgDataDefaults = {"emailFrom" : "from@sender.com",
 					"emailsTo": ["first@nice.com"] }
 # parameters for sending email
 embedtype = 'png' # This type gets enmbedde in the message
-filenames = ['/home/pi/power-monitor/powerMonitor_log.html',
-			 '/home/pi/power-monitor/test.png']
+filenames = ['/home/pi/powerMonitor/powerMonitor_log.html',
+			 '/home/pi/powerMonitor/test.png']
 print(filenames)
 date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 htmlintro = f'''

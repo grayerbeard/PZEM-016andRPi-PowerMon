@@ -93,13 +93,17 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 
 			# Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
 		for rn in range(0,len(filenames)):
-			print(filenames[rn],imghdr.what(filenames[rn]))		 
-			if imghdr.what(filenames[rn]) == embedtype:
-				ImageID = 'myimageid' +  str(rn)
-				print(ImageID)
-				html = f'''{htmlintro}<img src='cid:{ImageID}' width="700">
-						'''
-				print(rn,filenames[0][rn],"  Will be embedded.")
+			try:
+				print(filenames[rn],imghdr.what(filenames[rn]))		 
+				if imghdr.what(filenames[rn]) == embedtype:
+					ImageID = 'myimageid' +  str(rn)
+					print(ImageID)
+					html = f'''{htmlintro}<img src='cid:{ImageID}' width="700">
+							'''
+					print(rn,filenames[0][rn],"  Will be embedded.")
+			except:
+				print("Error with Filenames to send")
+				
 		html = f'''{html} {loghtml}
 			</body>
 		</html>
