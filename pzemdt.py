@@ -110,13 +110,13 @@ def readAcPZEM(chanPort, chanAddr, headings) :
 	if client.connect() :
 		try :
 			result = client.read_input_registers (0x0000, 10, unit = chanAddr)
-			reading[headings[1]] = str(scaleFactor (result.registers[0:1], 10))
-			reading[headings[2]] = str(scaleFactor (result.registers[1:3], 1000))
-			reading[headings[3]] = str(scaleFactor (result.registers[3:5], 10))
-			reading[headings[4]] = str(scaleFactor (result.registers[5:7], 1))
-			reading[headings[5]] = str(scaleFactor (result.registers[7:8], 10))
-			reading[headings[6]] = str(scaleFactor (result.registers[8:9], 100))
-			reading[headings[7]] = str(int(result.registers[9]))
+			reading[headings[2]] = str(scaleFactor (result.registers[0:1], 10))
+			reading[headings[3]] = str(scaleFactor (result.registers[1:3], 1000))
+			reading[headings[4]] = str(scaleFactor (result.registers[3:5], 10))
+			reading[headings[5]] = str(scaleFactor (result.registers[5:7], 1))
+			reading[headings[6]] = str(scaleFactor (result.registers[7:8], 10))
+			reading[headings[7]] = str(scaleFactor (result.registers[8:9], 100))
+			reading[headings[8]] = str(int(result.registers[9]))
 
 		except Exception as e :
 			print('Exception reading AC PZEM: ' + str(e))

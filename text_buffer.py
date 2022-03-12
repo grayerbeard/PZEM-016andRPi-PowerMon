@@ -198,7 +198,7 @@ class class_text_buffer(object):
 		for key in self.line_values:
 			#print(key, " : ",self.line_values[key])
 			make_values[i+1] = self.line_values[key]
-			for_screen = for_screen + " " + self.line_values[key]
+			for_screen = for_screen + " " + str(self.line_values[key])
 			i += 1
 		#except:
 		#	print("Error in make values in ...buffer.pr for : ",self.__config.prog_name)
