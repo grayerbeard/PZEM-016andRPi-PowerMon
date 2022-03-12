@@ -192,13 +192,17 @@ while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 		if ((scansSinceLog > LimitScansSinceLog) and powerBeingUsed) or  (config.scan_count < 2) \
 				or (scansSinceLog > LimitScansMustLog): 
 			log_buffer.line_values = pzem_reading
-			log_buffer.pr(True,0,lst,refresh_time)
+			log_buffer.pr(True,0,lst,refresh_time) #  True here makes bufer increment on
 			last8LoggedReadings = pzem_reading
 			if shedClosed and powerBeingUsed and (scansSinceEmail > LimitScansSinceEmail):
 				sendMail(cfgData,htmlintro,filenames,log_buffer.logFile,embedtype,log_buffer.email_html)
 				scansSinceEmail = 0
 			config.scan_count += 1
 			scansSinceLog = -1
+			
+		else:
+			log_buffer.line_values = pzem_reading
+			log_buffer.pr(False,0,lst,refresh_time) # False here makes buffer NOT increment on			
 			
 		scansSinceLog += 1
 		scansSinceEmail += 1
