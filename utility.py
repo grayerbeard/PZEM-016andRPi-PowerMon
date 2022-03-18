@@ -97,11 +97,8 @@ def show_html(html_filename):
 	webbrowser.open(url,new=2) # new=2 signals new tab
 	
 def make_time_text(time_value):
-	#make a time stamp in format mm:dd hr:mn:sc
-	return(str(time_value.month).zfill(2) + "_" + str(time_value.day).zfill(2) + "__"
-	  + str(time_value.hour).zfill(2) + "_" + str(time_value.minute).zfill(2) +"_"
-	  + str(time_value.second).zfill(2))
-
+	#make a time stamp in format mm:dd hr:mn:sc.xxx ie with millisecs
+	return time_value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 def send_by_ftp(dbug_send_ftp,ftp_cred,send_filename, save_as_filename, ftp_remote_dir,ftp_timeout):
 	here = "send_by_ftp"

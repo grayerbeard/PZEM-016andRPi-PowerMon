@@ -43,7 +43,7 @@ from sys import argv as sys_argv
 from utility import pr,make_time_text,send_by_ftp
 
 class class_config:
-	def __init__(self):
+	def __init__(self,logTime):
 # Start of items set in config.cfg
 	# Scan
 		self.scan_delay = 10		# delay in seconds between each scan (not incl sensor responce times)
@@ -80,6 +80,7 @@ class class_config:
 		self.prog_path = path.dirname(path.realpath(__file__)) + "/"
 		self.prog_name = str(sys_argv[0][:-3])
 		self.config_filename = "config.cfg"
+		self.logType = "log" # default log type
 		print("Program Name is : ",self.prog_name)
 		print("config file is : ",self.config_filename)
 

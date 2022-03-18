@@ -42,14 +42,13 @@ import socket
 from utility import pr,make_time_text,send_by_ftp
 
 class class_buffer_log:
-	def __init__(self,config):
+	def __init__(self,config,logTime):
 		self.dbug = False
 		self.__send_plain_count = 5
 		self.__no_heading_yet = True
 		self.__config = config
-		starttime = datetime.now()
-		timestamp = make_time_text(starttime)
-		self.log_filename = timestamp + "_" + self.__config.prog_name + "_" + "lg.csv"
+		timestamp = make_time_text(logTime)
+		self.log_filename = timestamp + "_" + self.__config.prog_name + "_" + self.__config.logType + ".csv"
 		self.__log_filename_save_as = self.__config.prog_path + self.__config.log_directory + self.log_filename
 		self.__local_www_log_filename = self.__config.local_dir_www + "/" + self.__config.log_directory + self.log_filename
 

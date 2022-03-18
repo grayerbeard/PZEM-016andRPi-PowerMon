@@ -128,7 +128,7 @@ def readAcPZEM(chanPort, chanAddr) :
         finally :
             client.close()
 
-    return voltage, amperage, power, energy, frequency, powerFactor, alarmStatus
+    return voltage, amperage, power, energy, frequency, powerFactor, alarmStatus, result
 
 
 #
@@ -189,7 +189,7 @@ if __name__ == '__main__':
 
     chan = 0
     print("Test PZEM-016 module on ", chanPorts[chan], " with channel address of ", chanAddrs[chan], "by performing read of 10 registers:")
-    voltage, amperage, power, energy, frequency, powerFactor, alarmStatus = readAcPZEM(chanPorts[chan], chanAddrs[chan])
+    voltage, amperage, power, energy, frequency, powerFactor, alarmStatus,result = readAcPZEM(chanPorts[chan], chanAddrs[chan])
     print(str(voltage) + 'V')
     print(str(amperage) + 'A')
     print(str(power) + 'W')
@@ -197,3 +197,4 @@ if __name__ == '__main__':
     print(str(frequency) + 'Hz')
     print(str(powerFactor) + " power factor")
     print(str(alarmStatus) + " alarm status")
+    print(result)

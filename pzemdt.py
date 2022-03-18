@@ -100,50 +100,67 @@ def scaleFactor(registers, sf) :
 #	 chanPort is the USB port - example: "/dev/ttyUSB0"
 #	 chanAddr is the PZEM module ModBus device address - example: 0x01
 #
-def readAcPZEM(chanPort, chanAddr, headings) :
+def readAcPZEM(chanPort, chanAddr, pzemHeadings) :
 	reading ={}
-	for heading in headings:
-		reading[heading] = ""
+	for pzemHeading in pzemHeadings:
+		reading[pzemHeading] = 1.234
 
 	client = ModbusClient(method = "rtu", port=chanPort, stopbits = 1, bytesize = 8, parity = 'N', baudrate = 9600)
 	
 	if client.connect() :
 		try :
 			result = client.read_input_registers (0x0000, 10, unit = chanAddr)
-			reading[headings[2]] = str(scaleFactor (result.registers[0:1], 10))
-			reading[headings[3]] = str(scaleFactor (result.registers[1:3], 1000))
-			reading[headings[4]] = str(scaleFactor (result.registers[3:5], 10))
-			reading[headings[5]] = str(scaleFactor (result.registers[5:7], 1))
-			reading[headings[6]] = str(scaleFactor (result.registers[7:8], 10))
-			reading[headings[7]] = str(scaleFactor (result.registers[8:9], 100))
-			reading[headings[8]] = str(int(result.registers[9]))
+				#Voltage
+			reading[pzemHeadings[0]] = round(scaleFactor (result.registers[0:1], 10),2)
+				#Amps
+			reading[pzemHeadings[1]] = round(scaleFactor (result.registers[1:3], 1000),2)
+				# Power
+			reading[pzemHeadings[2]] = round(scaleFactor (result.registers[3:5], 10),2)
+				#Energy
+			reading[pzemHeadings[3]] = round(scaleFactor (result.registers[5:7], 1),2)
+				#Frequency
+			reading[pzemHeadings[4]] = round(scaleFactor (result.registers[7:8], 10),2)
+				# Hertz
+			reading[pzemHeadings[5]] = round(scaleFactor (result.registers[8:9], 100),2)
 
+			# ORIGINAL
+            #result = client.read_input_registers (0x0000, 10, unit = chanAddr)
+            #voltage = scaleFactor (result.registers[0:1], 10)
+            #amperage = scaleFactor (result.registers[1:3], 1000)
+            #power = scaleFactor (result.registers[3:5], 10)
+            #energy = scaleFactor (result.registers[5:7], 1)
+            #frequency = scaleFactor (result.registers[7:8], 10)
+            #powerFactor = scaleFactor (result.registers[8:9], 100)
+            #alarmStatus = int(result.registers[9])
+
+
+
+
+
+
+
+			
 		except Exception as e :
 			print('Exception reading AC PZEM: ' + str(e))
 
 		finally :
 			client.close()
-	###
-	#return voltage, amperage, power, energy, frequency, powerFactor, alarmStatus
+	else:
+		print("Cannot connect on chanPort : ",chanport, " and chanAddr : ",chanAddr)
 	return reading
-
-
 #
 # DC Module read
 #	 chanPort is the USB port - example: "/dev/ttyUSB0"
 #	 chanAddr is the PZEM module ModBus device address - example: 0x01
 #
 
-
-
 if __name__ == '__main__':
 	chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
 	chanAddrs = [0x01, 0x01]
-
+	pzemHeadings = ["Voltage","Amps","Power","Energy","Hz","PF"]
 	chan = 0
 	print("Test PZEM-016 module on ", chanPorts[chan], " with channel address of ", chanAddrs[chan], "by performing read of 10 registers:")
-	pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan])
-	itemIndex = 0
-	for key in pzem_reading:
-		print(str(round(pzem_reading[key],2)))
-		itemIndex +=1
+	pzemReading = readAcPZEM(chanPorts[chan], chanAddrs[chan],pzemHeadings)
+	for key in pzemReading:
+		print(key, " : ",pzemReading[key]) 
+

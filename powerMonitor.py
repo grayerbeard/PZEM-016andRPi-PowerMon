@@ -25,7 +25,7 @@
 # Standard library imports
 from time import sleep as time_sleep
 from os import path
-from datetime import datetime
+import datetime
 from sys import exit as sys_exit
 from subprocess import call
 
@@ -49,9 +49,9 @@ from cfgData import edit_cfgData , get_cfgData, password_decrypt
 
 def main(args):
     
-	
+	logTime= datetime.datetime.now()
 	#Set up Config file and read it in if present
-	config = class_config()
+	config = class_config(logTime)
 	if fileexists(config.config_filename):		
 		print( "will try to read Config File : " ,config.config_filename)
 		config.read_file() # overwrites from file
@@ -61,13 +61,17 @@ def main(args):
 		
 	config.scan_count = 0
 	
-	headings = ["Peak","Average","Voltage","Amps","Power","Energy","Hz","PF","Alarm","Message"]
-	log_buffer = class_text_buffer(headings,config)
+	allHeadings = ["Voltage","Amps","Power","Energy","Hz","PF", \
+				"PZEMpeak","PZEMaverage","calcPower","calcPeak","calcAverage","Message"]
+	pzemHeadings = ["Voltage","Amps","Power","Energy","Hz","PF"]
+	logBuffer = class_text_buffer(allHeadings,config,"log",logTime)
+	debugHeadings = ["Topic","Message","Value1","Value2"]
+	debugBuffer = class_text_buffer(debugHeadings,config,"debug",logTime)
 	
-	sensor = class_my_sensors(config)
+	sensor = class_my_sensors(config,logTime)
 	
 	# Set The Initial Conditions
-	the_end_time = datetime.now()
+	the_end_time = logTime
 	last_total = 0
 	loop_time = 0
 	correction = 7.5
@@ -126,7 +130,7 @@ def main(args):
 	filenames = ['/home/pi/powerMonitor/powerMonitor_log.html',
 				 '/home/pi/powerMonitor/test.png']
 	print(filenames)
-	date_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	date_str = logTime.strftime('%Y-%m-%d %H:%M:%S')
 	htmlintro = f'''
 		<html>
 			<body>
@@ -137,28 +141,43 @@ def main(args):
 	chanAddrs = [0x01, 0x01]
 	chan = 0
 	
-	initialReadings = readAcPZEM(chanPorts[chan], chanAddrs[chan],headings)
+	initialReadings = readAcPZEM(chanPorts[chan], chanAddrs[chan],pzemHeadings)
 
 
 	#  Shed open times
 	daysOpen = (2,3)
-	openTime =  7
+	openTime =  6
 	closeTime = 17
 
 	# List For Averages and Peaks
-	findPeakListLength = 70 #70
-	findPeakList = [float(initialReadings["Power"])] * findPeakListLength
-	findPeakListIndex = 0
+	readingsListsLength = 70 #70
+	readingsListPower = [round(float(initialReadings["Power"]),2)] * readingsListsLength
+	initialReadings["calcPower"] = round(initialReadings["Voltage"] * initialReadings["Amps"] \
+						* initialReadings["PF"],2)
+	readingsListCalcPower = [float(initialReadings["calcPower"])] * readingsListsLength
+	readingsListsIndex = 0
 	
 	#Limits and delays set up
 	minAveragePowerToLog = 50 #  USUALLY 50
-	LimitScansSinceLog  =  58 # logs every 5 minites
-	LimitScansSinceEmail = 1500  # Emails only every few hours
-	LimitScansMustLog = 58  #  USUALLY 58     5 minutes diided by 5 -2
 	
-	# Set counts so can operate soon after program started to make testing easire
-	scansSinceLog = LimitScansSinceLog - 2
-	scansSinceEmail = LimitScansSinceEmail - 2
+	
+	limitSinceLogMINS = 10 # normally 10   must not log morte often than this
+	limitSinceLogSecs = (limitSinceLogMINS * 60) - (0.5 * config.scan_delay)
+	limitSinceEmailHOURS = 0.5  # normally 3
+	limitSinceEmailSecs = (limitSinceEmailHOURS * 60 * 60) - (0.5 * config.scan_delay)
+	limitMustLogMINS = 120 # normally 120
+	limitMustLogSecs = (limitMustLogMINS * 60) - (0.5 * config.scan_delay)
+	
+
+
+
+	# Set so can operate soon after program started to make testing
+	timeLastLog = logTime - datetime.timedelta(seconds = 10)
+	timeLastEmail = logTime - datetime.timedelta(seconds = 10)
+	
+	timeSinceLog = (logTime - timeLastLog).total_seconds
+	timeSinceEmail = (logTime - timeLastEmail).total_seconds
+	
 	sleep_time = config.scan_delay
 	 
 	FileReadResult , cfgData = get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults)
@@ -175,53 +194,88 @@ def main(args):
 			
 	increment = False # flag crontrollein incrementing the text buffer
 	
+	debugIncrement = True
+	debugBuffer.line_values["Topic"] = "Start"
+	debugBuffer.line_values["Message"] = "Scan Limits For log and email"
+	debugBuffer.line_values["Value1"] = timeSinceLog
+	debugBuffer.line_values["Value2"] = timeSinceEmail
+	#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
+	
+	debugIncrement = True
+	debugBuffer.line_values["Topic"] = "Start"
+	debugBuffer.line_values["Message"] = "Scan Limits For log and email"
+	debugBuffer.line_values["Value1"] = timeSinceLog
+	debugBuffer.line_values["Value2"] = timeSinceEmail
+	#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
+	
 	while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 		try:
 			###
 			#print("config.scan_count : ", config.scan_count, "  scansSinceLog : ",
 				#scansSinceLog, "  scansSinceEmail : ",scansSinceEmail," slp: ",sleep_time)
 			# Loop Management and Watchdog
-			lst = datetime.now()
-			if not((lst.weekday() in daysOpen) and (openTime <= lst.hour < closeTime)):
+			logTime= datetime.datetime.now()
+			timeSinceLog = (logTime - timeLastLog).total_seconds()
+			timeSinceEmail = (logTime - timeLastEmail).total_seconds()
+			
+			if not((logTime.weekday() in daysOpen) and (openTime <= logTime.hour < closeTime)):
 				message = "shed closed"
 				shedClosed = True
 			else:
 				message = "shed open"
 				shedClosed = False
+				
+			message = message + " SinceLog : " + str(timeSinceLog) +" Since : " + str(timeSinceEmail)
+				
 			temp = sensor.get_temp()
-			pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan],headings)
-
-			# Logging
-
-			findPeakList[findPeakListIndex] = float(pzem_reading["Power"])
-			pzem_reading["Peak"] = max(findPeakList)
-			pzem_reading["Average"] = round(sum(findPeakList)/findPeakListLength,2)
+			pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan],pzemHeadings)
+			
+			readingsListPower[readingsListsIndex] =  round(pzem_reading["Power"],2)
+			readingsListCalcPower[readingsListsIndex] = round(float(pzem_reading["Voltage"]) * \
+					float(pzem_reading["Amps"]) * float(pzem_reading["PF"]),2)
+			
+				# Add extra items in the right order of
+				# PZEMpeak","PZEMaverage","calcPower","calcPeak","calcAverage","Message"
+			pzem_reading["PZEMpeak"] = round(max(readingsListPower),2)
+			pzem_reading["PZEMaverage"] = round(sum(readingsListPower)/readingsListsLength,2)
+			pzem_reading["calcPower"] = readingsListCalcPower[readingsListsIndex]
+			pzem_reading["calcPeak"] = round(max(readingsListCalcPower),2)
+			pzem_reading["calcAverage"] = round(sum(readingsListCalcPower)/readingsListsLength,2)
 			pzem_reading["Message"] = message
 
-			if findPeakListIndex > findPeakListLength -2 :
-				findPeakListIndex = 0
+			if readingsListsIndex > readingsListsLength -2 :
+				readingsListsIndex = 0
 			else:
-				findPeakListIndex += 1
+				readingsListsIndex += 1
 
-			log_buffer.line_values = pzem_reading
+			logBuffer.line_values = pzem_reading
 
-			if ((scansSinceLog > LimitScansSinceLog) and (float(pzem_reading["Average"]) > minAveragePowerToLog )) or  \
-					(config.scan_count < 2) or (scansSinceLog > LimitScansMustLog): 
+			if ((timeSinceLog >= limitSinceLogSecs) and (float(pzem_reading["PZEMaverage"]) > minAveragePowerToLog )) or  \
+					(config.scan_count < 2) or (timeSinceLog >= limitMustLogSecs): 
 				increment = True
 				config.scan_count += 1
-				scansSinceLog = -1
-				if (scansSinceEmail > LimitScansSinceEmail) and (float(pzem_reading["Average"]) > minAveragePowerToLog ) :
-					sendMail(cfgData,htmlintro,filenames,log_buffer.logFile,embedtype,log_buffer.email_html)
-					scansSinceEmail = 0
+				#scansSinceLog = 0
+				timeLastLog = logTime
+				if (timeSinceEmail > limitSinceEmailSecs) and (float(pzem_reading["PZEMaverage"]) > minAveragePowerToLog ) :
+					sendMail(cfgData,htmlintro,filenames,logBuffer.logFile,embedtype,logBuffer.email_html)
+					#scansSinceEmail = 0
+					timeLastEmail = logTime
+					
 			else:	 
 				increment = False
-			log_buffer.pr(increment,0,lst,refresh_time)	
-			scansSinceLog += 1
-			scansSinceEmail += 1
+				
+			debugIncrement = True
+			debugBuffer.line_values["Topic"] = "Start"
+			debugBuffer.line_values["Message"] = "Scan Limits For log and email"
+			debugBuffer.line_values["Value1"] = timeSinceLog
+			debugBuffer.line_values["Value2"] = timeSinceEmail
+			#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
+				
+			logBuffer.pr(increment,0,logTime,refresh_time)	
 	
 			# Loop Managemntn^^^
-			loop_end_time = datetime.now()
-			loop_time = (loop_end_time - lst).total_seconds()
+			loop_end_time = datetime.datetime.now()
+			loop_time = (loop_end_time - logTime).total_seconds()
 			# Adjust the sleep time to aceive the target loop time and apply
 			# with a slow acting correction added in to gradually improve accuracy
 			if loop_time < (config.scan_delay - (correction/1000)):
@@ -230,13 +284,13 @@ def main(args):
 					time_sleep(sleep_time)
 				except KeyboardInterrupt:
 					print("........Ctrl+C pressed... Output Off")
-					time_sleep(10)
+					time_sleep(3)
 					sys_exit()
 				except ValueError:
 					print("sleep_Time Error value is: ",sleep_time, "loop_time: ",
 					      loop_time,"correction/1000 : ",correction/1000)
 					print("Will do sleep using config.scan_delay and reset correction to 7.5msec")
-					cor66rection = 7.5
+					correction = 7.5
 					time_sleep(config.scan_delay)
 				except Exception:
 					print("some other error with time_sleep try with config.scan_delay")
@@ -244,7 +298,7 @@ def main(args):
 			else:
 				time_sleep(config.scan_delay)
 			last_end = the_end_time
-			the_end_time = datetime.now()
+			the_end_time = datetime.datetime.now()
 			last_total = (the_end_time - last_end).total_seconds()
 			error = 1000*(last_total - config.scan_delay)
 			if error > 250*(config.scan_delay):
@@ -255,7 +309,7 @@ def main(args):
 				# print("Error correcting OK, Error : ",error,"  Correction : ", correction)
 		except KeyboardInterrupt:
 			print(".........Ctrl+C pressed... Output Off")
-			time_sleep(10) 
+			time_sleep(3) 
 			sys_exit()
 	return 0
 

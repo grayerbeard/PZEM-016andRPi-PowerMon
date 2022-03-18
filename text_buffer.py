@@ -48,9 +48,10 @@ class class_text_buffer(object):
 	# Rotating Buffer Class
 	# Initiate with just the size required Parameter
 	# Get data with just a position in buffer Parameter
-	def __init__(self,headings,config):
+	def __init__(self,headings,config,logtype,logTime):
 		#initialization
 		self.__config = config
+		self.__config.logType = logtype
 		print(" Buffer Init for : ",self.__config.prog_name," with a size of : ",self.__config.text_buffer_length, " and  width of : ", len(headings) + 1, " including time stamp")
 		if not os.path.exists('log'):
 		    os.makedirs('log')
@@ -72,7 +73,7 @@ class class_text_buffer(object):
 		#print(self.__headings)
 		self.__pr_values = ["text"] * self.__width
 
-		self.__html_filename = config.prog_name + "_log.html"
+		self.__html_filename = config.prog_name + "_" + self.__config.logType + ".html"
 		self.__html_filename_save_as = config.prog_path + self.__html_filename
 		self.__www_filename = config.local_dir_www + "/" + self.__html_filename
 		self.__ftp_creds = config.ftp_creds_filename
@@ -80,7 +81,7 @@ class class_text_buffer(object):
 		self.logFile = ""
 		if self.__config.log_buffer_flag:
 			self.__send_log_count = 0
-			self.__log = class_buffer_log(config)
+			self.__log = class_buffer_log(self.__config,logTime)
 			
 		#try:
 		#	print("mqtt not installed")
@@ -124,7 +125,7 @@ class class_text_buffer(object):
 			i += 1
 
 		#print("Buffer updated and log buffer flag is : ",self.__config.log_buffer_flag)
-		if self.__config.log_buffer_flag:
+		if self.__config.log_buffer_flag and appnd:
 			self.__log.log_to_file(self.__headings,values)
 			if fileexists(self.__www_filename):
 				try:
@@ -166,11 +167,11 @@ class class_text_buffer(object):
 				all_data[ind][i] = line_dta[i]
 		return(all_data)
 
-	def pr(self,appnd,ref,log_time,refresh_interval):
+	def pr(self,appnd,ref,logTime,refresh_interval):
 		here = "buffer.pr for " + self.__config.prog_name
 		make_values = [" -- "]*self.__width
-		prtime = datetime.now()
-		for_screen = log_time.strftime('%d/%m/%Y %H:%M:%S')
+		prtime = logTime
+		for_screen = make_time_text(logTime)
 		# following alternative will show more resolution for fractions of a second
 		# for_screen = log_time.strftime('%d/%m/%Y %H:%M:%S.%f')      
 		make_values[0] = for_screen
@@ -219,12 +220,12 @@ class class_text_buffer(object):
 			if self.__config.log_buffer_flag:
 				self.logFile = self.__config.log_directory + self.__log.log_filename
 				htmlfile.write('<p>' + self.__html_filename + ' : ' + 
-					make_time_text(datetime.now())  + '      ' +
+					make_time_text(logTime)  + '      ' +
 					'<a href= "' + self.logFile + 
 					'" target="_blank"> View CSV Log File </a></p>\n<p>')
 			else:
 				htmlfile.write("<p>" + self.__html_filename + " : " + 
-					make_time_text(datetime.now())  + "</p>\n<p>")
+					make_time_text(logTime)  + "</p>\n<p>")
 			htmlfile.write(tbl_start + tbl_start_line)
 			self.email_html = tbl_start + tbl_start_line
 			for ind in range(0,len(self.__headings)):

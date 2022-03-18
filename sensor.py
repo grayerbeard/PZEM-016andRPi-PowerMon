@@ -33,7 +33,7 @@ from w1thermsensor import W1ThermSensor
 from utility import pr,make_time_text,send_by_ftp
 
 class class_my_sensors:
-	def __init__(self,config):
+	def __init__(self,config,logTime):
 		self.sensor4readings = config.sensor4readings
 
 	def get_temp(self):
