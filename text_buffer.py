@@ -98,6 +98,11 @@ class class_text_buffer(object):
 		# print("Update Buffer appnd and ref are : ",appnd,ref)
 		###
 		#print("Growing Buffer?  : ",self.__size," >> ",self.__config.text_buffer_length)
+		i = 0
+		for value in values:
+			self.__dta[self.__posn][i] =value
+			i += 1
+		
 		if appnd + (self.__source_ref != ref):
 			#we adding message and incrementing posn
 			if self.__size < self.__config.text_buffer_length-1 :
@@ -119,20 +124,33 @@ class class_text_buffer(object):
 		#for i in range(0,len(values)):
 		#	self.__dta[self.__posn][i] = values[i]
 
-		i = 0
-		for value in values:
-			self.__dta[self.__posn][i] = value
-			i += 1
+		
+		# ##############################################################################
+		#  Test WAS HERE
+		#i = 0
+		#for value in values:
+		#	self.__dta[self.__posn][i] = value
+		#	i += 1
 
 		#print("Buffer updated and log buffer flag is : ",self.__config.log_buffer_flag)
 		if self.__config.log_buffer_flag and appnd:
 			self.__log.log_to_file(self.__headings,values)
+			#print("Data to text logging")
+			#print(self.__headings)
+			#print(values)
+			
+			
+			
 			if fileexists(self.__www_filename):
 				try:
 					self.__log.copy_log_to_www(False)
 				except:
 					print("Failed to copy log file to www because this not there: ",self.__www_filename)
 			#send log file to website configevery ten scans
+			
+			# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   NEXT    Needs to be time based @@@@@@@@@@@@@@@@@@@@@@@@@
+			
+			
 			if self.__send_log_count > 10 and fileexists(self.__ftp_creds):
 				self.__log.send_log_by_ftp(False,self.__config.log_directory,self.__config.ftp_timeout)
 				self.__send_log_count = 0
@@ -248,7 +266,8 @@ class class_text_buffer(object):
 			self.email_html = self.email_html + file_end
 		
 		try:
-			copyfile(self.__html_filename, self.__www_filename)
+			if appnd != True:	
+				copyfile(self.__html_filename, self.__www_filename)
 		except:
 			print("Not able to copy : ",self.__html_filename, " to ", self.__www_filename)
 		

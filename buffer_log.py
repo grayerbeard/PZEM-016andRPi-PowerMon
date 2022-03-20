@@ -62,8 +62,12 @@ class class_buffer_log:
 			for hdg_ind in range(0,len(log_headings)):
 				self.__log_file.write(log_headings[hdg_ind] + ",")
 			self.__log_file.write("\n")
+		#print("string made by Buffer Log")
+		madeString = ""
 		for z in range(0,len(log_values),1):
 			self.__log_file.write(str(log_values[z]) + ",")
+			madeString += str(log_values[z]) + ","
+		#print(madeString)
 		self.__log_file.write("\n")
 		self.__log_file.flush()
 		

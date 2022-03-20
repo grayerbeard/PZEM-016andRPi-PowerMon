@@ -50,6 +50,7 @@ from cfgData import edit_cfgData , get_cfgData, password_decrypt
 def main(args):
     
 	logTime= datetime.datetime.now()
+	lastDay = logTime.day
 	#Set up Config file and read it in if present
 	config = class_config(logTime)
 	if fileexists(config.config_filename):		
@@ -78,8 +79,10 @@ def main(args):
 	# Ensure start right by inc buffer
 	#last_fan_state = True
 	#buffer_increment_flag = False
-	refresh_time = config.scan_delay # How often to refresh the browser display#
-	
+	if config.scan_delay > 6 :
+		refresh_time = config.scan_delay * 0.5 # How often to refresh the browser display#
+	else:
+		refresh_time = config.scan_delay
 
 	
 	#                 cfgData File for Email
@@ -161,11 +164,11 @@ def main(args):
 	minAveragePowerToLog = 50 #  USUALLY 50
 	
 	
-	limitSinceLogMINS = 10 # normally 10   must not log morte often than this
+	limitSinceLogMINS = 10 # normally 10 (minutes)  must not log morte often than this
 	limitSinceLogSecs = (limitSinceLogMINS * 60) - (0.5 * config.scan_delay)
 	limitSinceEmailHOURS = 0.5  # normally 3
 	limitSinceEmailSecs = (limitSinceEmailHOURS * 60 * 60) - (0.5 * config.scan_delay)
-	limitMustLogMINS = 120 # normally 120
+	limitMustLogMINS = 240 # normally 240 (minutes)
 	limitMustLogSecs = (limitMustLogMINS * 60) - (0.5 * config.scan_delay)
 	
 
@@ -208,6 +211,13 @@ def main(args):
 	debugBuffer.line_values["Value2"] = timeSinceEmail
 	#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
 	
+	powerAverageingTotal = 0
+	calcPowerAverageingTotal = 0
+	readingsCount = 0
+	powerPeak = 0
+	calcPowerPeak = 0
+	
+	
 	while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
 		try:
 			###
@@ -215,6 +225,14 @@ def main(args):
 				#scansSinceLog, "  scansSinceEmail : ",scansSinceEmail," slp: ",sleep_time)
 			# Loop Management and Watchdog
 			logTime= datetime.datetime.now()
+			if logTime.day != lastDay:
+				newDay = True
+				print("New Day!")
+			else:
+				newDay = False
+			lastDay = logTime.day
+
+			
 			timeSinceLog = (logTime - timeLastLog).total_seconds()
 			timeSinceEmail = (logTime - timeLastEmail).total_seconds()
 			
@@ -225,38 +243,48 @@ def main(args):
 				message = "shed open"
 				shedClosed = False
 				
-			message = message + " SinceLog : " + str(timeSinceLog) +" Since : " + str(timeSinceEmail)
-				
 			temp = sensor.get_temp()
-			pzem_reading = readAcPZEM(chanPorts[chan], chanAddrs[chan],pzemHeadings)
-			
-			readingsListPower[readingsListsIndex] =  round(pzem_reading["Power"],2)
-			readingsListCalcPower[readingsListsIndex] = round(float(pzem_reading["Voltage"]) * \
-					float(pzem_reading["Amps"]) * float(pzem_reading["PF"]),2)
-			
-				# Add extra items in the right order of
-				# PZEMpeak","PZEMaverage","calcPower","calcPeak","calcAverage","Message"
-			pzem_reading["PZEMpeak"] = round(max(readingsListPower),2)
-			pzem_reading["PZEMaverage"] = round(sum(readingsListPower)/readingsListsLength,2)
-			pzem_reading["calcPower"] = readingsListCalcPower[readingsListsIndex]
-			pzem_reading["calcPeak"] = round(max(readingsListCalcPower),2)
-			pzem_reading["calcAverage"] = round(sum(readingsListCalcPower)/readingsListsLength,2)
-			pzem_reading["Message"] = message
+			pzemReading = readAcPZEM(chanPorts[chan], chanAddrs[chan],pzemHeadings)
+			readingsCount += 1
+			message = message + " reading:" + str(readingsCount)," of: ",  (limitMustLogMINS * 60)/config.scan_delay
+			#########################################
+			# These must be done in the right Order #
+			#########################################
+			powerAverageingTotal +=  round(pzemReading["Power"],2)
+			calcPower = round(float(pzemReading["Voltage"]) * \
+					float(pzemReading["Amps"]) * float(pzemReading["PF"]),2)
+			calcPowerAverageingTotal += calcPower
+			if pzemReading["Power"] > powerPeak :
+				powerPeak = round(pzemReading["Power"],2)
+			pzemReading["PZEMpeak"] = powerPeak  # 1
+			if calcPower > calcPowerPeak:
+				calcPowerPeak = calcPower
+			pzemReading["PZEMaverage"] = round(powerAverageingTotal/readingsCount,2)  # 2
+			pzemReading["calcPower"] = calcPower # 3
+			pzemReading["calcPeak"] = calcPowerPeak # 4
+			pzemReading["calcAverage"] = round(calcPowerAverageingTotal/readingsCount,2) # 5
+			pzemReading["Message"] = message # 6
 
 			if readingsListsIndex > readingsListsLength -2 :
 				readingsListsIndex = 0
 			else:
 				readingsListsIndex += 1
 
-			logBuffer.line_values = pzem_reading
+			logBuffer.line_values = pzemReading
 
-			if ((timeSinceLog >= limitSinceLogSecs) and (float(pzem_reading["PZEMaverage"]) > minAveragePowerToLog )) or  \
-					(config.scan_count < 2) or (timeSinceLog >= limitMustLogSecs): 
+			if ((timeSinceLog >= limitSinceLogSecs) and (float(pzemReading["PZEMaverage"]) > minAveragePowerToLog )) or  \
+					(config.scan_count < 2) or (timeSinceLog >= limitMustLogSecs) or newDay: 
 				increment = True
 				config.scan_count += 1
 				#scansSinceLog = 0
 				timeLastLog = logTime
-				if (timeSinceEmail > limitSinceEmailSecs) and (float(pzem_reading["PZEMaverage"]) > minAveragePowerToLog ) :
+				readingsCount = 0
+				powerAverageingTotal = 0
+				calcPowerAverageingTotal = 0
+				powerPeak = 0
+				calcPowerPeak = 0
+				
+				if (timeSinceEmail > limitSinceEmailSecs) and (float(pzemReading["PZEMaverage"]) > minAveragePowerToLog ) :
 					sendMail(cfgData,htmlintro,filenames,logBuffer.logFile,embedtype,logBuffer.email_html)
 					#scansSinceEmail = 0
 					timeLastEmail = logTime
