@@ -1,62 +1,18 @@
 #!/usr/bin/env python3
-# This file is part of pwm_fanshim.
-# Copyright (C) 2015 Ivmech Mechatronics Ltd. <bilgi@ivmech.com>
-#
-# This is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# title           :powerMonitor.py
-# description     :plogging of shed power use
-# author          :David Torrens
-# start date      :2022 03 07
-# version         :0.1 March 2022
-# python_version  :3
+from configTest import class_config
 
-# Standard library imports
-from time import sleep as time_sleep
-from os import path
-import datetime
-from sys import exit as sys_exit
-from subprocess import call
-
-# Third party imports
-# None
-# Local application imports
-from config import class_config
-from text_buffer import class_text_buffer
-# Note use of pwm_test possible on next line
-###
-#from pwm import class_pwm
 from utility import fileexists,pr,make_time_text
 ###
-#from algorithm import class_control
-# Note use of sensor_test possible on next line
-from sensor import class_my_sensors
-from pzemdt import readAcPZEM 
-
-from sendMail import sendMail
-from cfgData import edit_cfgData , get_cfgData, password_decrypt
-from splitDay import class_splitDay
 
 def main(args):
     
 	logTime = datetime.datetime.now()
-	numLogsPerDay = 8
-	stepTest = class_splitDay(logTime,numLogsPerDay)
-	#Set up Config file and read it in if present
 	config = class_config(logTime)
-	if fileexists(config.config_filename):		
-		print( "will try to read Config File : " ,config.config_filename)
+	#if fileexists(config.config_filename):	
+	if fileexists("configTest.cfg")
+		#print( "will try to read Config File : " ,config.config_filename)
+		print( "will try to read Config File : " ,"configTest.cfg")
 		config.read_file() # overwrites from file
 	else : # no file so file needs to be writen
 		config.write_file()
@@ -67,9 +23,9 @@ def main(args):
 	allHeadings = ["Voltage","Amps","Power","Energy","Hz","PF", \
 				"PZEMpeak","PZEMaverage","calcPower","calcPeak","calcAverage","Recent Power","Message"]
 	pzemHeadings = ["Voltage","Amps","Power","Energy","Hz","PF"]
-	logBuffer = class_text_buffer(allHeadings,config,"log",logTime)
-	debugHeadings = ["Topic","Message","Value1","Value2"]
-	debugBuffer = class_text_buffer(debugHeadings,config,"debug",logTime)
+	#logBuffer = class_text_buffer(allHeadings,config,"log",logTime)
+	#debugHeadings = ["Topic","Message","Value1","Value2"]
+	#debugBuffer = class_text_buffer(debugHeadings,config,"debug",logTime)
 	
 	sensor = class_my_sensors(config,logTime)
 	

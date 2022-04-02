@@ -146,7 +146,7 @@ def readAcPZEM(chanPort, chanAddr, pzemHeadings) :
 		finally :
 			client.close()
 	else:
-		print("Cannot connect on chanPort : ",chanport, " and chanAddr : ",chanAddr)
+		print("Cannot connect on chanPort : ",chanPort, " and chanAddr : ",chanAddr)
 	return reading
 #
 # DC Module read
