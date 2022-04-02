@@ -216,7 +216,7 @@ def main(args):
 	calcPowerPeak = 0
 	startHold = True
 	lastHoldMin = logTime.minute 
-
+	lastHoldSec = 0
 	
 	
 	while (config.scan_count <= config.max_scans) or (config.max_scans == 0):
@@ -227,8 +227,14 @@ def main(args):
 			# Loop Management and Watchdog
 			while startHold:
 				holdMin = datetime.datetime.now().minute
+				holdSec = datetime.datetime.now().second
 				if holdMin != lastHoldMin:
 					startHold = False
+					break
+				if holdSec > (lastHoldSec + 5):
+					print("Waiting for next Minute : ",(60 - holdSec))
+					lastHoldSec = holdSec
+
 			logTime = datetime.datetime.now()
 			timeSinceLog = (logTime - timeLastLog).total_seconds()
 			timeSinceEmail = (logTime - timeLastEmail).total_seconds()
@@ -263,7 +269,9 @@ def main(args):
 			pzemReading["calcAverage"] = round(calcPowerAverageingTotal/readingsCount,2) # 5
 			pzemReading["Recent Power"] = smoothedPower
 			pzemReading["Message"] = message # 6
-
+			if pzemReading["Voltage"] < 2 :
+				print("Not right  yet", "\n","\n")
+				time_sleep(3)
 			#if readingsListsIndex > readingsListsLength -2 :
 			#	readingsListsIndex = 0
 			#else:
