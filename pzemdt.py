@@ -123,22 +123,6 @@ def readAcPZEM(chanPort, chanAddr, pzemHeadings) :
 				# Hertz
 			reading[pzemHeadings[5]] = round(scaleFactor (result.registers[8:9], 100),2)
 
-			# ORIGINAL
-            #result = client.read_input_registers (0x0000, 10, unit = chanAddr)
-            #voltage = scaleFactor (result.registers[0:1], 10)
-            #amperage = scaleFactor (result.registers[1:3], 1000)
-            #power = scaleFactor (result.registers[3:5], 10)
-            #energy = scaleFactor (result.registers[5:7], 1)
-            #frequency = scaleFactor (result.registers[7:8], 10)
-            #powerFactor = scaleFactor (result.registers[8:9], 100)
-            #alarmStatus = int(result.registers[9])
-
-
-
-
-
-
-
 			
 		except Exception as e :
 			print('Exception reading AC PZEM: ' + str(e))
