@@ -51,8 +51,7 @@ from splitDay import class_splitDay
 def main(args):
     
 	logTime = datetime.datetime.now()
-	numLogsPerDay = 8
-	stepTest = class_splitDay(logTime,numLogsPerDay)
+	
 	#Set up Config file and read it in if present
 	config = class_config(logTime)
 	if fileexists(config.config_filename):		
@@ -61,6 +60,8 @@ def main(args):
 	else : # no file so file needs to be writen
 		config.write_file()
 		print("New Config File Made with default values, you probably need to edit it")
+	
+	stepTest = class_splitDay(logTime,config.numLogsPerDay)
 		
 	config.scan_count = 0
 	
@@ -68,10 +69,9 @@ def main(args):
 				"PZEMpeak","PZEMaverage","calcPower","calcPeak","calcAverage","Recent Power","Message"]
 	pzemHeadings = ["Voltage","Amps","Power","Energy","Hz","PF"]
 	logBuffer = class_text_buffer(allHeadings,config,"log",logTime)
-	debugHeadings = ["Topic","Message","Value1","Value2"]
-	debugBuffer = class_text_buffer(debugHeadings,config,"debug",logTime)
 	
-	sensor = class_my_sensors(config,logTime)
+	#NOT in use yet
+	#sensor = class_my_sensors(config,logTime)
 	
 	# Set The Initial Conditions
 	the_end_time = logTime
@@ -133,13 +133,18 @@ def main(args):
 	# parameters for sending email
 	embedtype = 'png' # This type gets enmbedde in the message
 	filenames = ['/home/pi/powerMonitor/powerMonitor_log.html',
-				 '/home/pi/powerMonitor/test.png']
+				 '/home/pi/powerMonitor/config.cfg']
 	print(filenames)
+	for filename in filenames:
+		if fileexists(filename) == False:
+			print(filename," does not exist")
+			sys_exit()
+			
 	date_str = logTime.strftime('%Y-%m-%d %H:%M:%S')
 	htmlintro = f'''
 		<html>
 			<body>
-				<h1>WMIS Energy Report {date_str}</h1>
+				<h1>{config.location} Energy Report {date_str}</h1>
 				<p>Hello, welcome to your report!</p>
 				'''
 	chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
@@ -150,9 +155,12 @@ def main(args):
 	smoothedPower = round(initialReadings["Power"],3)
 
 	#  Shed open times
-	daysOpen = (2,3)
-	openTime =  6
-	closeTime = 17
+	daysOpen = []
+	for day in config.daysOpen:
+		daysOpen.append(int(day))
+	print("daysOpen  ",daysOpen)
+	openTime =  config.openTime
+	closeTime = config.closeTime
 
 	# List For Averages and Peaks
 	#readingsListsLength = 70 #70
@@ -163,17 +171,17 @@ def main(args):
 	#readingsListsIndex = 0
 	
 	#Limits and delays set up
-	minAveragePowerToLog = 50 #  USUALLY 50
+	minAveragePowerToLog = config.minAveragePowerToLog #  USUALLY 50
 	
 
-	limitSinceLogMINS = 10 # normally 10 (minutes)  must not log morte often than this
+	limitSinceLogMINS = config.limitSinceLogMINS # normally 10 (minutes)  must not log morte often than this
 	limitSinceLogSecs = (limitSinceLogMINS * 60) - (0.5 * config.scan_delay)
-	limitSinceEmailHOURS = 3  # normally 3
+	limitSinceEmailHOURS = config.limitSinceEmailHOURS  # normally 3
 	limitSinceEmailSecs = (limitSinceEmailHOURS * 60 * 60) - (0.5 * config.scan_delay)
 	
 	# Set so can operate soon after program started to make testing
 	timeLastLog = logTime - datetime.timedelta(seconds = 10)
-	timeLastEmail = logTime - datetime.timedelta(seconds = 10)
+	timeLastEmail = logTime - datetime.timedelta(seconds = limitSinceEmailSecs - 120)
 	
 	timeSinceLog = (logTime - timeLastLog).total_seconds
 	timeSinceEmail = (logTime - timeLastEmail).total_seconds
@@ -194,19 +202,6 @@ def main(args):
 			
 	increment = False # flag crontrollein incrementing the text buffer
 	
-	debugIncrement = True
-	debugBuffer.line_values["Topic"] = "Start"
-	debugBuffer.line_values["Message"] = "Scan Limits For log and email"
-	debugBuffer.line_values["Value1"] = timeSinceLog
-	debugBuffer.line_values["Value2"] = timeSinceEmail
-	#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
-	
-	debugIncrement = True
-	debugBuffer.line_values["Topic"] = "Start"
-	debugBuffer.line_values["Message"] = "Scan Limits For log and email"
-	debugBuffer.line_values["Value1"] = timeSinceLog
-	debugBuffer.line_values["Value2"] = timeSinceEmail
-	#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
 	
 	
 	powerAverageingTotal = 0
@@ -225,7 +220,9 @@ def main(args):
 			#print("config.scan_count : ", config.scan_count, "  scansSinceLog : ",
 				#scansSinceLog, "  scansSinceEmail : ",scansSinceEmail," slp: ",sleep_time)
 			# Loop Management and Watchdog
-			while startHold:
+			
+			while False:
+			#while startHold:
 				holdMin = datetime.datetime.now().minute
 				holdSec = datetime.datetime.now().second
 				if holdMin != lastHoldMin:
@@ -246,14 +243,15 @@ def main(args):
 				message = "open"
 				shedClosed = False
 			newLogStep = stepTest.checkSplit(logTime)
-			temp = sensor.get_temp()
+			
+			#not in use yet
+			#temp = sensor.get_temp()
+			
+			
 			pzemReading = readAcPZEM(chanPorts[chan], chanAddrs[chan],pzemHeadings)
 			readingsCount += 1
 			smoothedPower = round(smoothedPower + (0.05 * (pzemReading["Power"] - smoothedPower)),3)  
 			message = message + " rdg:" + str(readingsCount) + " logStep:" + str(stepTest.stepNumber)
-			#########################################
-			# These must be done in the right Order #
-			#########################################
 			powerAverageingTotal +=  round(pzemReading["Power"],2)
 			calcPower = round(float(pzemReading["Voltage"]) * \
 					float(pzemReading["Amps"]) * float(pzemReading["PF"]),2)
@@ -291,19 +289,23 @@ def main(args):
 				powerPeak = 0
 				calcPowerPeak = 0
 				
-				if (timeSinceEmail > limitSinceEmailSecs) and (smoothedPower > minAveragePowerToLog ) and shedClosed :
+				if (config.scan_count == 2) or ((timeSinceEmail > limitSinceEmailSecs) and (smoothedPower > minAveragePowerToLog ) and shedClosed ):
 					sendMail(cfgData,htmlintro,filenames,logBuffer.logFile,embedtype,logBuffer.email_html)
-					#scansSinceEmail = 0
+					print("sent Mail")
+				elif (smoothedPower > minAveragePowerToLog) and shedClosed:
+					print("Average power more than send mail limit and shed closed; timeSinceEmail  ", \
+						round(timeSinceEmail,2), " of ",round(limitSinceEmailSecs,2))
 					timeLastEmail = logTime
 					
 			else:	 
 				increment = False
-				
-			debugIncrement = True
-			debugBuffer.line_values["Topic"] = "Start"
-			debugBuffer.line_values["Message"] = "Scan Limits For log and email"
-			debugBuffer.line_values["Value1"] = timeSinceLog
-			debugBuffer.line_values["Value2"] = timeSinceEmail
+			
+			# Not in use now	
+			#debugIncrement = True
+			#debugBuffer.line_values["Topic"] = "Start"
+			#debugBuffer.line_values["Message"] = "Scan Limits For log and email"
+			#debugBuffer.line_values["Value1"] = timeSinceLog
+			#debugBuffer.line_values["Value2"] = timeSinceEmail
 			#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
 				
 			logBuffer.pr(increment,0,logTime,refresh_time)	

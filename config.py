@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # title           :config.py
-# description     :pwm control for Sauna Electric Heater Control
+# description     :pwm control for powerMonitor Electric Heater Control
 # author          :David Torrens
 # start date      :2019 12 12
 # version         :0.1
@@ -46,31 +46,22 @@ class class_config:
 	def __init__(self,logTime):
 # Start of items set in config.cfg
 	# Scan
+		self.location = "home"
 		self.scan_delay = 10		# delay in seconds between each scan (not incl sensor responce times)
 		self.max_scans = 0			# number of scans to do, set to zero to scan for ever (until type "ctrl C")
 	# Log
 		self.log_directory = "log/"	# where to store log files
 		self.local_dir_www = "/var/www/html" # default value for local web folder
 		self.log_buffer_flag = True	 # whether to generate the csv log file as well as the html text file	
-		self.text_buffer_length = 15	# number of lines in the text buffer in the html file	
-	# Ftp
-		self.ftp_creds_filename = "/home/pi/ftp_creds/ftp_creds.csv"
-		self.ftp_log_max_count  = 5
-		self.ftp_timeout = 0.5
-		self.ftplog = 0		# Number of Value Changes before Log File is Saved to remote website, 0 means every change
-	# Sauna
-		self.max_temp =  73.0
-		self.min_temp = 67.0
-		self.min_speed = 40
-		self.max_speed = 100
-		self.min_freq = 2.0
-		self.max_freq = 4.0
-		self.sauna_GPIO_port = 18
-		self.sensor4readings = "0315a80584ff"
-	# mqtt
-		self.broker_address = "192.168.0.120" # Change to suite your brokers address
-		self.broker_port = 1883 # Check on server port being used 'sudo netstat -l -t'
-		self.topic = "House/test"
+	# powerMonitor
+		self.numLogsPerDay =  12
+		self.daysOpen = (2,3)
+		self.openTime = 6
+		self.closeTime = 17
+		self.minAveragePowerToLog = 50
+		self.limitSinceLogMINS = 10
+		self.limitSinceEmailHOURS = 3
+		self.spare = "spare"
 		
 # End of items set in config.cfg	
 
@@ -89,6 +80,7 @@ class class_config:
 		config_read = RawConfigParser()
 		config_read.read(self.config_filename)
 		section = "Scan"
+		self.location =  str(config_read.get(section, 'location'))
 		self.scan_delay = float(config_read.get(section, 'scan_delay')) 
 		self.max_scans = float(config_read.get(section, 'max_scans'))
 		section = "Log"
@@ -96,28 +88,23 @@ class class_config:
 		self.local_dir_www = config_read.get(section, 'local_dir_www')
 		self.log_buffer_flag = config_read.getboolean(section, 'log_buffer_flag')
 		self.text_buffer_length  = int(config_read.get(section, 'text_buffer_length'))		
-		section = "Ftp"
-		self.ftp_creds_filename = config_read.get(section, 'ftp_creds_filename') 
-		self.ftp_log_max_count = float(config_read.get(section, 'ftp_log_max_count'))
-		section = "Sauna"
-		self.max_temp =  float(config_read.get(section, 'max_temp'))
-		self.min_temp =  float(config_read.get(section, 'min_temp'))
-		self.min_speed =  float(config_read.get(section, 'min_speed'))
-		self.max_speed =  float(config_read.get(section, 'max_speed'))
-		self.min_freq =  float(config_read.get(section, 'min_freq'))
-		self.max_freq =  float(config_read.get(section, 'max_freq'))
-		self.sauna_GPIO_port =  int(config_read.get(section, 'sauna_GPIO_port'))
-		self.sensor4readings =  str(config_read.get(section, 'sensor4readings'))
-		section = "mqtt"
-		self.broker_address = str(config_read.get(section, 'broker_address'))
-		self.broker_port = int(config_read.get(section, 'broker_port'))
-		self.topic = str(config_read.get(section, 'topic'))
+		section = "powerMonitor"
+		self.numLogsPerDay =  float(config_read.get(section, 'numLogsPerDay'))
+		self.daysOpen =  config_read.get(section, 'daysOpen').split()
+		print("daysopen  ",self.daysOpen)
+		self.openTime =  float(config_read.get(section, 'openTime'))
+		self.closeTime =  float(config_read.get(section, 'closeTime'))
+		self.minAveragePowerToLog =  float(config_read.get(section, 'minAveragePowerToLog'))
+		self.limitSinceLogMINS =  float(config_read.get(section, 'limitSinceLogMINS'))
+		self.limitSinceEmailHOURS =  int(config_read.get(section, 'limitSinceEmailHOURS'))
+		self.spare =  str(config_read.get(section, 'spare'))
 		return
 
 	def write_file(self):
 		here = "config.write_file"
 		config_write = RawConfigParser()
 		section = "Scan"
+		config_write.set(section, 'location',self.location)
 		config_write.add_section(section)
 		config_write.set(section, 'scan_delay',self.scan_delay)
 		config_write.set(section, 'max_scans',self.max_scans)
@@ -127,25 +114,16 @@ class class_config:
 		config_write.set(section, 'local_dir_www',self.local_dir_www)
 		config_write.set(section, 'log_buffer_flag',self.log_buffer_flag)
 		config_write.set(section, 'text_buffer_length',self.text_buffer_length)	
-		section = "Ftp"
-		config_write.add_section(section)
-		config_write.set(section, 'ftp_creds_filename',self.ftp_creds_filename)
-		config_write.set(section, 'ftp_log_max_count',self.ftp_log_max_count)
-		section = "Sauna"	
+		section = "powerMonitor"	
 		config_write.add_section(section)	
-		config_write.set(section, 'max_temp',self.max_temp)
-		config_write.set(section, 'min_temp',self.min_temp)
-		config_write.set(section, 'min_speed',self.min_speed)
-		config_write.set(section, 'max_speed',self.max_speed)		
-		config_write.set(section, 'min_freq',self.min_freq)
-		config_write.set(section, 'max_freq',self.max_freq)
-		config_write.set(section, 'sauna_GPIO_port',self.sauna_GPIO_port)
-		config_write.set(section, 'sensor4readings',self.sensor4readings)
-		section = "mqtt"
-		config_write.add_section(section)
-		config_write.set(section, 'broker_address',self.broker_address)
-		config_write.set(section, 'broker_port',self.broker_port)
-		config_write.set(section, 'topic',self.topic)
+		config_write.set(section, 'numLogsPerDay',self.numLogsPerDay)
+		config_write.set(section, 'daysOpen',self.daysOpen)
+		config_write.set(section, 'openTime',self.openTime)
+		config_write.set(section, 'closeTime',self.closeTime)		
+		config_write.set(section, 'minAveragePowerToLog',self.minAveragePowerToLog)
+		config_write.set(section, 'limitSinceLogMINS',self.limitSinceLogMINS)
+		config_write.set(section, 'limitSinceEmailHOURS',self.limitSinceEmailHOURS)
+		config_write.set(section, 'spare',self.spare)
 		# Writing our configuration file to 'self.config_filename'
 		pr(self.dbug, here, "ready to write new config file with default values: " , self.config_filename)
 		with open(self.config_filename, 'w+') as configfile:

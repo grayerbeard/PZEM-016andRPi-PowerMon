@@ -76,7 +76,10 @@ class class_text_buffer(object):
 		self.__html_filename = config.prog_name + "_" + self.__config.logType + ".html"
 		self.__html_filename_save_as = config.prog_path + self.__html_filename
 		self.__www_filename = config.local_dir_www + "/" + self.__html_filename
-		self.__ftp_creds = config.ftp_creds_filename
+		try:
+			self.__ftp_creds = config.ftp_creds_filename
+		except:
+			self.__ftp_creds = "" # ftp not in use
 		self.__send_html_count = 0
 		self.logFile = ""
 		if self.__config.log_buffer_flag:
@@ -193,12 +196,10 @@ class class_text_buffer(object):
 		# following alternative will show more resolution for fractions of a second
 		# for_screen = log_time.strftime('%d/%m/%Y %H:%M:%S.%f')      
 		make_values[0] = for_screen
-		file_start = """<head>
-<meta http-equiv="refresh" content="""
-		file_start = file_start + str(refresh_interval)
-		file_start = file_start + """ />
+		file_start = f'''<head>
+<meta http-equiv="refresh" content={str(refresh_interval)}/>
 </head>
-<caption>Rotating Buffer Display</caption>"""
+<caption>{self.__config.location} Buffer Display</caption>'''
 		tbl_start = """ <p>
 <table style="float: left;" border="1">
 <tbody>"""

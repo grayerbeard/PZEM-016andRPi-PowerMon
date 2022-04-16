@@ -92,6 +92,7 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 		email_message['Subject'] = cfgData["subject"] 
 
 			# Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+		html = "html not set"
 		for rn in range(0,len(filenames)):
 			try:
 				print(filenames[rn],imghdr.what(filenames[rn]))		 
@@ -101,8 +102,11 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 					html = f'''{htmlintro}<img src='cid:{ImageID}' width="700">
 							'''
 					print(rn,filenames[0][rn],"  Will be embedded.")
+				else:
+					html = "sdfg"
 			except:
 				print("Error with Filenames to send")
+				html = "@@@ Error in Send Mail lines 97 to 103 with Filenames to send @@@@"
 				
 		html = f'''{html} {loghtml}
 			</body>
@@ -114,13 +118,15 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 			#Attach Files
 		filenames.append(logFile)
 		print("filenames in email : ",filenames)
-		for rn in range(0,len(filenames)):
-			#print(filenames[0][rn],filenames[1][rn])
-			if imghdr.what(filenames[rn]) == embedtype:
-				attach_file_to_email(email_message,filenames[rn],ImageID)
-			else:	
-				attach_file_to_email(email_message,filenames[rn])
- 
+		try:
+			for rn in range(0,len(filenames)):
+			   #print(filenames[0][rn],filenames[1][rn])
+				if imghdr.what(filenames[rn]) == embedtype:
+					attach_file_to_email(email_message,filenames[rn],ImageID)
+				else:	
+					attach_file_to_email(email_message,filenames[rn])
+		except:
+			print("error with filenames")
 			# Convert it as a string
 		email_string = email_message.as_string()
 

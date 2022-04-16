@@ -158,7 +158,12 @@ def get_cfgData(cfgDataFileName,cfgDataRequiredKeys,cfgDataDefaults):
 	
 	try:
 		with open(cfgDataFileName, 'r') as cfgDataFile:
-			cfgData_file_data = json.load(cfgDataFile)
+			try:
+				cfgData_file_data = json.load(cfgDataFile)
+			except:
+				print("Cannot read in file line 164")
+				FileReadResult = 0
+				exit
 			print()
 			print("Here is the data read from the file") 
 			for key in cfgData_file_data: 
