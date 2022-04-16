@@ -46,22 +46,23 @@ class class_config:
 	def __init__(self,logTime):
 # Start of items set in config.cfg
 	# Scan
-		self.location = "home"
-		self.scan_delay = 10		# delay in seconds between each scan (not incl sensor responce times)
+		self.location = "Set for Your Location"
+		self.scan_delay = 30		# delay in seconds between each scan (not incl sensor responce times)
 		self.max_scans = 0			# number of scans to do, set to zero to scan for ever (until type "ctrl C")
 	# Log
 		self.log_directory = "log/"	# where to store log files
 		self.local_dir_www = "/var/www/html" # default value for local web folder
 		self.log_buffer_flag = True	 # whether to generate the csv log file as well as the html text file	
+		self.text_buffer_length  = 30  # Length of rotating buffer
 	# powerMonitor
 		self.numLogsPerDay =  12
-		self.daysOpen = (2,3)
+		self.daysOpen = (0,1,2,3,4,5,6)  # Edit for days "open" 0 is Monday, no brackets in config.cfg
 		self.openTime = 6
 		self.closeTime = 17
 		self.minAveragePowerToLog = 50
 		self.limitSinceLogMINS = 10
 		self.limitSinceEmailHOURS = 3
-		self.spare = "spare"
+		self.spare = 0
 		
 # End of items set in config.cfg	
 
@@ -90,22 +91,22 @@ class class_config:
 		self.text_buffer_length  = int(config_read.get(section, 'text_buffer_length'))		
 		section = "powerMonitor"
 		self.numLogsPerDay =  float(config_read.get(section, 'numLogsPerDay'))
-		self.daysOpen =  config_read.get(section, 'daysOpen').split()
+		self.daysOpen =  config_read.get(section, 'daysOpen').split(",")
 		print("daysopen  ",self.daysOpen)
 		self.openTime =  float(config_read.get(section, 'openTime'))
 		self.closeTime =  float(config_read.get(section, 'closeTime'))
 		self.minAveragePowerToLog =  float(config_read.get(section, 'minAveragePowerToLog'))
 		self.limitSinceLogMINS =  float(config_read.get(section, 'limitSinceLogMINS'))
 		self.limitSinceEmailHOURS =  int(config_read.get(section, 'limitSinceEmailHOURS'))
-		self.spare =  str(config_read.get(section, 'spare'))
+		self.spare =  int(config_read.get(section, 'spare'))
 		return
 
 	def write_file(self):
 		here = "config.write_file"
 		config_write = RawConfigParser()
 		section = "Scan"
-		config_write.set(section, 'location',self.location)
 		config_write.add_section(section)
+		config_write.set(section, 'location',self.location)
 		config_write.set(section, 'scan_delay',self.scan_delay)
 		config_write.set(section, 'max_scans',self.max_scans)
 		section = "Log"
@@ -117,7 +118,8 @@ class class_config:
 		section = "powerMonitor"	
 		config_write.add_section(section)	
 		config_write.set(section, 'numLogsPerDay',self.numLogsPerDay)
-		config_write.set(section, 'daysOpen',self.daysOpen)
+		daysOpenAsString  =",".join(map(str,self.daysOpen))
+		config_write.set(section, 'daysOpen',daysOpenAsString)
 		config_write.set(section, 'openTime',self.openTime)
 		config_write.set(section, 'closeTime',self.closeTime)		
 		config_write.set(section, 'minAveragePowerToLog',self.minAveragePowerToLog)
@@ -125,7 +127,7 @@ class class_config:
 		config_write.set(section, 'limitSinceEmailHOURS',self.limitSinceEmailHOURS)
 		config_write.set(section, 'spare',self.spare)
 		# Writing our configuration file to 'self.config_filename'
-		pr(self.dbug, here, "ready to write new config file with default values: " , self.config_filename)
+		print("Will write new config file with default values: " , self.config_filename)
 		with open(self.config_filename, 'w+') as configfile:
 			config_write.write(configfile)
 		return 0
