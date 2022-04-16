@@ -9,6 +9,8 @@
 *.html
  #text files used for saving copies of files
 *.txt
+ #config file. becahse need to be able set different diffsrent locations
+*.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
