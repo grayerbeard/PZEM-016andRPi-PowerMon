@@ -9,7 +9,7 @@
 *.html
  #text files used for saving copies of files
 *.txt
- #config file. becahse need to be able set different diffsrent locations
+ # config.cfg so can have local config
 *.cfg
 
 # Byte-compiled / optimized / DLL files
