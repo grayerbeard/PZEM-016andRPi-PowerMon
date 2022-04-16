@@ -128,7 +128,7 @@ def main(args):
 						"token": "@@@@@@@@@",
 						"mailSMTP" : "mail.server.com",
 						"mailPort": "465",
-						"subject": "Mail from Python",
+						"subject": "Default Subject  Line 131",
 						"emailsTo": ["first@nice.com"] }
 	# parameters for sending email
 	embedtype = 'png' # This type gets enmbedde in the message
@@ -144,8 +144,8 @@ def main(args):
 	htmlintro = f'''
 		<html>
 			<body>
-				<h1>{config.location} Energy Report {date_str}</h1>
-				<p>Hello, welcome to your report!</p>
+				<h3>{config.location} Energy Report </h3>
+				<p>Report dated {date_str}</p>
 				'''
 	chanPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
 	chanAddrs = [0x01, 0x01]
@@ -290,6 +290,7 @@ def main(args):
 				calcPowerPeak = 0
 				
 				if (config.scan_count == 2) or ((timeSinceEmail > limitSinceEmailSecs) and (smoothedPower > minAveragePowerToLog ) and shedClosed ):
+					cfgData["subject"] = config.location + " : " + message
 					sendMail(cfgData,htmlintro,filenames,logBuffer.logFile,embedtype,logBuffer.email_html)
 					print("sent Mail")
 				elif (smoothedPower > minAveragePowerToLog) and shedClosed:
