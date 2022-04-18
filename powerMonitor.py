@@ -293,10 +293,13 @@ def main(args):
 					cfgData["subject"] = config.location + " : " + message
 					sendMail(cfgData,htmlintro,filenames,logBuffer.logFile,embedtype,logBuffer.email_html)
 					print("sent Mail")
+					timeLastEmail = logTime
+					message += " Email Sent, "
 				elif (smoothedPower > minAveragePowerToLog) and shedClosed:
 					print("Average power more than send mail limit and shed closed; timeSinceEmail  ", \
 						round(timeSinceEmail,2), " of ",round(limitSinceEmailSecs,2))
-					timeLastEmail = logTime
+					message += " PwrHgh(" + str(round(limitSinceEmailSecs,2)) + ", "
+					
 					
 			else:	 
 				increment = False
