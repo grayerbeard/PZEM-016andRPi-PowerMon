@@ -85,7 +85,9 @@ class class_text_buffer(object):
 		if self.__config.log_buffer_flag:
 			self.__send_log_count = 0
 			self.__log = class_buffer_log(self.__config,logTime)
-			
+			self.logFile = self.__config.log_directory + self.__log.log_filename
+		else:
+			self.logFile = ""	
 		#try:
 		#	print("mqtt not installed")
 			#self.__mqttc = mqtt.Client("python_pub")
@@ -237,7 +239,8 @@ class class_text_buffer(object):
 		with open(self.__html_filename,'w') as htmlfile:
 			htmlfile.write(file_start)
 			if self.__config.log_buffer_flag:
-				self.logFile = self.__config.log_directory + self.__log.log_filename
+				#if self.logFile == "":
+				#	self.logFile = self.__config.log_directory + self.__log.log_filename			
 				htmlfile.write('<p>' + self.__html_filename + ' : ' + 
 					make_time_text(logTime)  + '      ' +
 					'<a href= "' + self.logFile + 

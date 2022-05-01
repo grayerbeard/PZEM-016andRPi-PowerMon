@@ -83,6 +83,9 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 # subject		: Text to put in the email subject
 	print("emailsTo",cfgData["emailsTo"])
 	emailsTo  = cfgData["emailsTo"]
+	
+	filenames.append(logFile)	
+	
 	for emailTo in cfgData["emailsTo"] :
 		print("Sending to : ",emailTo)
 			# Create a MIMEMultipart class, and set up the From, To, Subject fields
@@ -117,8 +120,8 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 	
 		email_message.attach(MIMEText(html, "html"))
 			#Attach Files
-		filenames.append(logFile)
-		print("filenames in email : ",filenames)
+		
+		print("\n sendmail I filenames in email : ",filenames, "\n logfile is :", logFile)
 		try:
 			for rn in range(0,len(filenames)):
 			   #print(filenames[0][rn],filenames[1][rn])
