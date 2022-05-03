@@ -222,33 +222,17 @@ class class_text_buffer(object):
 		file_end = """
 </body>
 </html>"""
-		#try:
 		i = 0
-		#for i in range(0,self.__width -1):
 		for key in self.line_values:
-			#print(key, " : ",self.line_values[key])
 			make_values[i+1] = self.line_values[key]
 			for_screen = for_screen + " " + str(self.line_values[key])
 			i += 1
-		#except:
-		#	print("Error in make values in ...buffer.pr for : ",self.__config.prog_name)
-		#	print("i,values,len(self.line_value>s),self.__width",i,self.line_values,len(self.line_values),self.__width)
-		#	sys_exit()
-				
-		# print to screen and to status log and update html file
-		
-		#if appnd:
-		#	print(" a/" + self.__config.prog_name + "/" + for_screen)
-		#else:
-		#	print("na/" + self.__config.prog_name + "/" + for_screen)
 		print(for_screen)
 
 		self.update_buffer(make_values,appnd,ref)
 		with open(self.__html_filename,'w') as htmlfile:
 			htmlfile.write(file_start)
-			if self.__config.log_buffer_flag:
-				#if self.logFile == "":
-				#	self.logFile = self.__config.log_directory + self.__log.log_filename			
+			if self.__config.log_buffer_flag:			
 				htmlfile.write('<p>' + self.__html_filename + ' : ' + 
 					make_time_text(logTime)  + '      ' +
 					'<a href= "' + self.logFile + 
@@ -271,8 +255,6 @@ class class_text_buffer(object):
 					for i in range(self.__width):
 						htmlfile.write(tbl_start_col + str(buffer_dta[ind][i]) + tbl_end_col)
 						self.email_html = self.email_html + tbl_start_col + str(buffer_dta[ind][i]) + tbl_end_col
-				else:
-					print("None detected at line : ",ind)
 				htmlfile.write(tbl_end_line)
 				self.email_html = self.email_html + tbl_end_line
 			htmlfile.write(tbl_end)
