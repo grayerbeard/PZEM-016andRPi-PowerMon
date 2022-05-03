@@ -202,6 +202,8 @@ def main(args):
 			
 	increment = False # flag crontrollein incrementing the text buffer
 	
+	filenames.append(logBuffer.logFile)	
+	print("\n Filenames with log file sendMail line 88 : ",filenames,"\n")
 	
 	
 	powerAverageingTotal = 0
@@ -295,7 +297,7 @@ def main(args):
 					else:
 						message = message + "Higher Power Detected, "
 					cfgData["subject"] = config.location + " : " + message
-					sendMail(cfgData,htmlintro,filenames,logBuffer.logFile,embedtype,logBuffer.email_html)
+					sendMail(cfgData,htmlintro,filenames,embedtype,logBuffer.email_html)
 					print("sent Mail")
 					timeLastEmail = logTime
 					message += " Email Sent, "

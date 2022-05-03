@@ -72,7 +72,7 @@ def attach_file_to_email(email_message, filename,ImageID = None):
 	# Attach the file to the message
 	email_message.attach(file_attachment)
 
-def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
+def sendMail(cfgData,htmlintro,filenames,embedtype,loghtml):
 
 		#Generate the Password Key based on the MachineID
 # email_from	: a single email; address
@@ -81,11 +81,7 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 # mailSMTP		: the address of the server for sending email
 # mailPort		: port number for sending email e.g. 465
 # subject		: Text to put in the email subject
-	print("emailsTo",cfgData["emailsTo"])
 	emailsTo  = cfgData["emailsTo"]
-	print("Filenames sendMail line 86 : ",filenames)
-	filenames.append(logFile)	
-	print("Filenames sendMail line 88 : ",filenames)
 	for emailTo in cfgData["emailsTo"] :
 		print("Sending to : ",emailTo)
 			# Create a MIMEMultipart class, and set up the From, To, Subject fields
@@ -98,7 +94,7 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 		html = htmlintro
 		for rn in range(0,len(filenames)):
 			try:
-				print(filenames[rn],imghdr.what(filenames[rn]))		 
+				#print(filenames[rn],imghdr.what(filenames[rn]))		 
 				if imghdr.what(filenames[rn]) == embedtype:
 					ImageID = 'myimageid' +  str(rn)
 					#print(ImageID)
