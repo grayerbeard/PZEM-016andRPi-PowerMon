@@ -302,9 +302,10 @@ def main(args):
 					timeLastEmail = logTime
 					message += " Email Sent, "
 				elif (smoothedPower > minAveragePowerToLog) and shedClosed:
-					print("Average power more than send mail limit and shed closed; timeSinceEmail  ", \
-						round(timeSinceEmail,2), " of ",round(limitSinceEmailSecs,2))
-					message += " PwrHgh(" + str(round(limitSinceEmailSecs,2)) + ", "
+					timeToEmail = round((imitSinceEmailSecs - timeSinceEmail)/60,2)
+					print("Just did log Average power high will email in ", \
+						timeToEmail, " minutes ")
+					message += " PwrHgh(" + str(timeToEmail) + " mins to email, "
 					
 					
 			else:	 
