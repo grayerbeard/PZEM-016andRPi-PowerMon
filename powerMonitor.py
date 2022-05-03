@@ -289,7 +289,11 @@ def main(args):
 				powerPeak = 0
 				calcPowerPeak = 0
 				
-				if (config.scan_count == 2) or ((timeSinceEmail > limitSinceEmailSecs) and (smoothedPower > minAveragePowerToLog ) and shedClosed ):
+				if (config.scan_count == 3) or ((timeSinceEmail > limitSinceEmailSecs) and (smoothedPower > minAveragePowerToLog ) and shedClosed ):
+					if config.scan_count == 3:
+						message = message + "Start up Email, "
+					else:
+						message = message + "Higher Power Detected, "
 					cfgData["subject"] = config.location + " : " + message
 					sendMail(cfgData,htmlintro,filenames,logBuffer.logFile,embedtype,logBuffer.email_html)
 					print("sent Mail")
