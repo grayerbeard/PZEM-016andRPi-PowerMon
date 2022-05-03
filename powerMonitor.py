@@ -253,7 +253,6 @@ def main(args):
 			pzemReading = readAcPZEM(chanPorts[chan], chanAddrs[chan],pzemHeadings)
 			readingsCount += 1
 			smoothedPower = round(smoothedPower + (0.05 * (pzemReading["Power"] - smoothedPower)),3)  
-			message = message + " rdg:" + str(readingsCount) + " logStep:" + str(stepTest.stepNumber)
 			powerAverageingTotal +=  round(pzemReading["Power"],2)
 			calcPower = round(float(pzemReading["Voltage"]) * \
 					float(pzemReading["Amps"]) * float(pzemReading["PF"]),2)
@@ -277,7 +276,7 @@ def main(args):
 			#else:
 			#	readingsListsIndex += 1
 
-			logBuffer.line_values = pzemReading
+			
 
 			if ((timeSinceLog >= limitSinceLogSecs) and (smoothedPower > minAveragePowerToLog )) or  \
 					(config.scan_count < 4) or newLogStep: 
@@ -318,7 +317,8 @@ def main(args):
 			#debugBuffer.line_values["Value1"] = timeSinceLog
 			#debugBuffer.line_values["Value2"] = timeSinceEmail
 			#debugBuffer.pr(debugIncrement,0,logTime,refresh_time)
-				
+			pzemReading["Message"] = message	
+			logBuffer.line_values = pzemReading
 			logBuffer.pr(increment,0,logTime,refresh_time)	
 	
 			# Loop Managemntn^^^
