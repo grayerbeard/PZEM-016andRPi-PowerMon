@@ -103,6 +103,14 @@ class class_text_buffer(object):
 		# print("Update Buffer appnd and ref are : ",appnd,ref)
 		###
 		#print("Growing Buffer?  : ",self.__size," >> ",self.__config.text_buffer_length)
+		
+		
+		if (self.__size == 0) and appnd == False:
+			appnd = True
+			print("Made append true when size zero")
+		elif (self.__size == 0):
+			print("size zero but append not False")
+		
 		i = 0
 		for value in values:
 			self.__dta[self.__posn][i] =value
