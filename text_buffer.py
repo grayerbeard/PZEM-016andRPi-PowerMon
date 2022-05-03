@@ -267,7 +267,7 @@ class class_text_buffer(object):
 			for ind in range(self.__size):
 				htmlfile.write(tbl_start_line)
 				self.email_html = self.email_html + tbl_start_line
-				if str(buffer_dta[ind][0] != "None":
+				if str(buffer_dta[ind][0]) != "None":
 					for i in range(self.__width):
 						htmlfile.write(tbl_start_col + str(buffer_dta[ind][i]) + tbl_end_col)
 						self.email_html = self.email_html + tbl_start_col + str(buffer_dta[ind][i]) + tbl_end_col
