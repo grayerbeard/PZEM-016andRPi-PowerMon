@@ -280,7 +280,7 @@ def main(args):
 			logBuffer.line_values = pzemReading
 
 			if ((timeSinceLog >= limitSinceLogSecs) and (smoothedPower > minAveragePowerToLog )) or  \
-					(config.scan_count < 2) or newLogStep: 
+					(config.scan_count < 4) or newLogStep: 
 				increment = True
 				config.scan_count += 1
 				#scansSinceLog = 0
