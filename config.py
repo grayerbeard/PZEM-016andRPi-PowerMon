@@ -97,7 +97,7 @@ class class_config:
 		self.closeTime =  float(config_read.get(section, 'closeTime'))
 		self.minAveragePowerToLog =  float(config_read.get(section, 'minAveragePowerToLog'))
 		self.limitSinceLogMINS =  float(config_read.get(section, 'limitSinceLogMINS'))
-		self.limitSinceEmailHOURS =  int(config_read.get(section, 'limitSinceEmailHOURS'))
+		self.limitSinceEmailHOURS =  float(config_read.get(section, 'limitSinceEmailHOURS'))
 		self.spare =  int(config_read.get(section, 'spare'))
 		return
 

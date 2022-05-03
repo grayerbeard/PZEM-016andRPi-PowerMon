@@ -83,9 +83,9 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 # subject		: Text to put in the email subject
 	print("emailsTo",cfgData["emailsTo"])
 	emailsTo  = cfgData["emailsTo"]
-	
+	print("Filenames sendMail line 86 : ",filenames)
 	filenames.append(logFile)	
-	
+	print("Filenames sendMail line 88 : ",filenames)
 	for emailTo in cfgData["emailsTo"] :
 		print("Sending to : ",emailTo)
 			# Create a MIMEMultipart class, and set up the From, To, Subject fields
@@ -101,13 +101,13 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 				print(filenames[rn],imghdr.what(filenames[rn]))		 
 				if imghdr.what(filenames[rn]) == embedtype:
 					ImageID = 'myimageid' +  str(rn)
-					print(ImageID)
+					#print(ImageID)
 					html = f'''{html}<img src='cid:{ImageID}' width="700">
 							'''
-					print(rn,filenames[0][rn],"  Will be embedded.")
+					#print(rn,filenames[0][rn],"  Will be embedded.")
 				else:
 					html = html
-					print("This file not image :" + filenames[rn])
+					#print("This file not image :" + filenames[rn])
 			except:
 				print("Error with Filenames to send")
 				html = html + "@@@ Error in Send Mail lines 97 to 103 with Filenames to send @@@@"
@@ -116,12 +116,12 @@ def sendMail(cfgData,htmlintro,filenames,logFile,embedtype,loghtml):
 			</body>
 		</html>
 		'''
-		print(html)
+		#print(html)
 	
 		email_message.attach(MIMEText(html, "html"))
 			#Attach Files
 		
-		print("\n sendmail I filenames in email : ",filenames, "\n logfile is :", logFile)
+		#print("\n sendmail line 124 filenames in email : ",filenames, "\n logfile is :", logFile)
 		try:
 			for rn in range(0,len(filenames)):
 			   #print(filenames[0][rn],filenames[1][rn])
