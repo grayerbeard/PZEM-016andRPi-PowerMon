@@ -131,14 +131,11 @@ def main(args):
 						"subject": "Default Subject  Line 131",
 						"emailsTo": ["first@nice.com"] }
 	# parameters for sending email
-	embedtype = 'png' # This type gets enmbedde in the message
+	embedtype = 'png' # This type gets enmbeded in the message
 	filenames = ['/home/pi/powerMonitor/powerMonitor_log.html',
 				 '/home/pi/powerMonitor/config.cfg']
 	print(filenames)
-	for filename in filenames:
-		if fileexists(filename) == False:
-			print(filename," does not exist")
-			sys_exit()
+
 			
 	date_str = logTime.strftime('%Y-%m-%d %H:%M:%S')
 	htmlintro = f'''

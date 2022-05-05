@@ -34,6 +34,8 @@ from email.mime.application import MIMEApplication
 from cfgData import edit_cfgData , get_cfgData, password_decrypt
 import os
 import imghdr
+from utility import fileexists,pr,make_time_text
+from sys import exit as sys_exit
 
 try:
 	import json
@@ -81,7 +83,12 @@ def sendMail(cfgData,htmlintro,filenames,embedtype,loghtml):
 # mailSMTP		: the address of the server for sending email
 # mailPort		: port number for sending email e.g. 465
 # subject		: Text to put in the email subject
-	emailsTo  = cfgData["emailsTo"]
+
+	for filename in filenames:
+		if fileexists(filename) == False:
+			print(filename," does not exist")
+			sys_exit()
+		#emailsTo  = cfgData["emailsTo"]
 	for emailTo in cfgData["emailsTo"] :
 		print("Sending to : ",emailTo)
 			# Create a MIMEMultipart class, and set up the From, To, Subject fields

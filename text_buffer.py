@@ -86,6 +86,14 @@ class class_text_buffer(object):
 			self.__send_log_count = 0
 			self.__log = class_buffer_log(self.__config,logTime)
 			self.logFile = self.__config.log_directory + self.__log.log_filename
+			wwwLogDir = self.__config.log_directory_www.replace(self.__config.local_dir_www, "")
+			self.linkLogFile = wwwLogDir + self.__log.log_filename
+			print("self.__config.log_directory : ",self.__config.log_directory)
+			print("self.__log.log_filename : ", self.__log.log_filename)
+			print("self.__config.log_directory_www : ", self.__config.log_directory_www)
+			print("self.__config.local_dir_www : ", self.__config.local_dir_www)
+			print("wwwLogDir : ", wwwLogDir)
+			print("self.linkLogFile : ", self.linkLogFile)
 		else:
 			self.logFile = ""	
 		#try:
@@ -235,7 +243,7 @@ class class_text_buffer(object):
 			if self.__config.log_buffer_flag:			
 				htmlfile.write('<p>' + self.__html_filename + ' : ' + 
 					make_time_text(logTime)  + '      ' +
-					'<a href= "' + self.logFile + 
+					'<a href= "' + self.linkLogFile + 
 					'" target="_blank"> View CSV Log File </a></p>\n<p>')
 			else:
 				htmlfile.write("<p>" + self.__html_filename + " : " + 

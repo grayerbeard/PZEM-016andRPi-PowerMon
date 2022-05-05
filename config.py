@@ -50,7 +50,8 @@ class class_config:
 		self.scan_delay = 30		# delay in seconds between each scan (not incl sensor responce times)
 		self.max_scans = 0			# number of scans to do, set to zero to scan for ever (until type "ctrl C")
 	# Log
-		self.log_directory = "log/"	# where to store log files
+		self.log_directory = "/home/pi/powerMonitor/log/"	# where to store log files
+		self.log_directory_www = "/var/www/html/log" # default website log directory
 		self.local_dir_www = "/var/www/html" # default value for local web folder
 		self.log_buffer_flag = True	 # whether to generate the csv log file as well as the html text file	
 		self.text_buffer_length  = 30  # Length of rotating buffer
@@ -86,6 +87,7 @@ class class_config:
 		self.max_scans = float(config_read.get(section, 'max_scans'))
 		section = "Log"
 		self.log_directory = config_read.get(section, 'log_directory')
+		self.log_directory_www = config_read.get(section, 'log_directory_www')
 		self.local_dir_www = config_read.get(section, 'local_dir_www')
 		self.log_buffer_flag = config_read.getboolean(section, 'log_buffer_flag')
 		self.text_buffer_length  = int(config_read.get(section, 'text_buffer_length'))		
@@ -112,6 +114,7 @@ class class_config:
 		section = "Log"
 		config_write.add_section(section)
 		config_write.set(section, 'log_directory',self.log_directory)
+		config_write.set(section, 'log_directory_www',self.log_directory_www)
 		config_write.set(section, 'local_dir_www',self.local_dir_www)
 		config_write.set(section, 'log_buffer_flag',self.log_buffer_flag)
 		config_write.set(section, 'text_buffer_length',self.text_buffer_length)	

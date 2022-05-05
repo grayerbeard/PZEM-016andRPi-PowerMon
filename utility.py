@@ -98,7 +98,7 @@ def show_html(html_filename):
 	
 def make_time_text(time_value):
 	#make a time stamp in format mm:dd hr:mn:sc.xxx ie with millisecs
-	return time_value.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+	return time_value.strftime('%Y-%m-%d %H %M %S.%f')[:-3]
 
 def send_by_ftp(dbug_send_ftp,ftp_cred,send_filename, save_as_filename, ftp_remote_dir,ftp_timeout):
 	here = "send_by_ftp"
