@@ -52,7 +52,11 @@ class class_buffer_log:
 		#self.__log_filename_save_as = self.__config.prog_path + self.__config.log_directory + self.log_filename
 		self.__log_filename_save_as = self.__config.log_directory + self.log_filename
 		#self.__local_www_log_filename = self.__config.local_dir_www + "/" + self.__config.log_directory + self.log_filename
-		self.__local_www_log_filename = self.__config.log_directory_www + self.log_filename
+		self.__local_www_log_filename = self.__config.log_directory_www + "/" + self.log_filename
+		print("####################################")
+		print("self.__config.log_directory_www : ",self.__config.log_directory_www)
+		print("Log file will be copied to",self.__local_www_log_filename)
+		print("####################################")
 
 	def log_to_file(self,log_headings,log_values):
 		here = 	"log_cpu_data_to_file"
