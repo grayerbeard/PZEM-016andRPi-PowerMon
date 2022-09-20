@@ -87,7 +87,7 @@ class class_text_buffer(object):
 			self.__log = class_buffer_log(self.__config,logTime)
 			self.logFile = self.__config.log_directory + self.__log.log_filename
 			wwwLogDir = self.__config.log_directory_www.replace(self.__config.local_dir_www, "")
-			self.linkLogFile = wwwLogDir + self.__log.log_filename
+			self.linkLogFile = wwwLogDir + "/" + self.__log.log_filename
 			print("self.__config.log_directory : ",self.__config.log_directory)
 			print("self.__log.log_filename : ", self.__log.log_filename)
 			print("self.__config.log_directory_www : ", self.__config.log_directory_www)
@@ -244,7 +244,7 @@ class class_text_buffer(object):
 				htmlfile.write('<p>' + self.__html_filename + ' : ' + 
 					make_time_text(logTime)  + '      ' +
 					'<a href= "' + self.linkLogFile + 
-					'" target="_blank"> View CSV Log File </a></p>\n<p>')
+					'" target="_blank"> View the CSV Log File </a></p>\n<p>')
 			else:
 				htmlfile.write("<p>" + self.__html_filename + " : " + 
 					make_time_text(logTime)  + "</p>\n<p>")
