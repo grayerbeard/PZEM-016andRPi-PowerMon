@@ -1,0 +1,43 @@
+Sensor Class set up
+
+
+sensor :  1    SensorID :  0316062c0fff  Temp :  14.125
+sensor :  2    SensorID :  0316064402ff  Temp :  14.3125
+sensor :  3    SensorID :  0315a80584ff  Temp :  14.3125
+1 0316062c0fff 14.125
+2 0316064402ff 14.3125
+3 0315a80584ff 14.3125
+['0316062c0fff', '0316064402ff', '0315a80584ff']
+[14.125, 14.3125, 14.3125]
+sensor :  1    SensorID :  0316062c0fff  Temp :  14.125
+sensor :  2    SensorID :  0316064402ff  Temp :  14.3125
+sensor :  3    SensorID :  0315a80584ff  Temp :  14.3125
+1 0316062c0fff 14.125
+2 0316064402ff 14.3125
+3 0315a80584ff 14.3125
+['0316062c0fff', '0316064402ff', '0315a80584ff']
+[14.125, 14.3125, 14.3125]
+sensor :  1    SensorID :  0316062c0fff  Temp :  14.125
+sensor :  2    SensorID :  0316064402ff  Temp :  14.3125
+sensor :  3    SensorID :  0315a80584ff  Temp :  14.3125
+1 0316062c0fff 14.125
+2 0316064402ff 14.3125
+3 0315a80584ff 14.3125
+['0316062c0fff', '0316064402ff', '0315a80584ff']
+[14.125, 14.3125, 14.3125]
+sensor :  1    SensorID :  0316062c0fff  Temp :  14.125
+sensor :  2    SensorID :  0316064402ff  Temp :  14.3125
+sensor :  3    SensorID :  0315a80584ff  Temp :  14.3125
+1 0316062c0fff 14.125
+2 0316064402ff 14.3125
+3 0315a80584ff 14.3125
+['0316062c0fff', '0316064402ff', '0315a80584ff']
+[14.125, 14.3125, 14.3125]
+sensor :  1    SensorID :  0316062c0fff  Temp :  14.125
+sensor :  2    SensorID :  0316064402ff  Temp :  14.3125
+sensor :  3    SensorID :  0315a80584ff  Temp :  14.3125
+1 0316062c0fff 14.125
+2 0316064402ff 14.3125
+3 0315a80584ff 14.3125
+['0316062c0fff', '0316064402ff', '0315a80584ff']
+[14.125, 14.3125, 14.3125]
